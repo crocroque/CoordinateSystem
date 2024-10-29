@@ -273,13 +273,3 @@ class CoordinateSystem:
             pygame.display.update()
 
         pygame.quit()
-
-
-if __name__ == '__main__':
-
-    def f(x):
-        return math.sqrt(x) ** (x**x)
-
-    x = CoordinateSystem(Function(f), (800, 800), -10, 10, 1, -10, 10, 1, 0.01)
-
-    x.show()
