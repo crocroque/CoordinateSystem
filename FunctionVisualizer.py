@@ -13,7 +13,6 @@ class Function:
         while x <= stop:
             try:
                 image = self.expression(x)
-                print(image)
                 if type(image) is not complex:
                     images[x] = image
 
@@ -39,8 +38,8 @@ class FunctionEvaluatingError(Exception):
 
 
 class CoordinateSystem:
-    def __init__(self, function: Function, screen_size: tuple, x_min: float, x_max: float, x_graduation_step: float, y_min: float, y_max: float,  y_graduation_step: float, trace_step: float, draw_points: bool = True, draw_lines_between_points: bool = False):
-        self.function = function
+    def __init__(self, function, screen_size: tuple, x_min: float, x_max: float, x_graduation_step: float, y_min: float, y_max: float,  y_graduation_step: float, trace_step: float, draw_points: bool = True, draw_lines_between_points: bool = False):
+        self.function = Function(function)
         self.width, self.height = screen_size
 
         if x_min >= x_max:
@@ -248,7 +247,7 @@ class CoordinateSystem:
         print(f"getting images and points ({(self.x_max - self.x_min) / self.trace_step})")
         points = self.get_curve_points()
 
-        if len(self.ignored_error) > 0:
+        if len(self.ignored_error) > 0 and show_ignored_error:
             list_error = ""
             for error in self.ignored_error:
                 list_error += "- " + error + "\n"
@@ -274,3 +273,13 @@ class CoordinateSystem:
             pygame.display.update()
 
         pygame.quit()
+
+
+if __name__ == '__main__':
+
+    def f(x):
+        return math.sqrt(x) ** (x**x)
+
+    x = CoordinateSystem(Function(f), (800, 800), -10, 10, 1, -10, 10, 1, 0.01)
+
+    x.show()
