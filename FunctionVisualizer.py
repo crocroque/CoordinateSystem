@@ -254,7 +254,7 @@ class CoordinateSystem:
             messagebox_root = Tk()
             messagebox_root.withdraw()
             messagebox.showinfo("ignored error while calculating the points", f"ignored error (the associated point will not be displayed) :\n{list_error}")
-            messagebox_root.quit()
+            messagebox_root.destroy()
 
         while running:
             for event in pygame.event.get():
