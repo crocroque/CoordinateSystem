@@ -6,7 +6,7 @@ import math
 
 def show_function():
     def f(x: float) -> float:
-        return eval(function_entry.get())
+        return eval(function_entry.get(), {"x": x, "math": math})
 
     try:
         system = CoordinateSystem(function=f,
