@@ -81,6 +81,19 @@ def make_param_check_box(win: ctk.CTk, param_name: str, row, description: str) -
     return check_btn, var
 
 
+def automatic_tracestep():
+    try:
+        points_number = (float(x_max_entry.get()) - float(x_min_entry.get())) / float(trace_step_entry.get())
+
+    except:
+        pass
+
+    else:
+        automatic_tracestep_label.configure(text=f"{points_number} points")
+
+    root.after(100, automatic_tracestep)
+
+
 def show_more_option():
     global more_option, bg_color_entry, point_color_entry, axes_color_entry, graduation_color_entry, show_coordinate_param, win_title_entry, show_ignored_error_param
 
@@ -114,6 +127,9 @@ y_max_entry = make_param_entry(root, "y_max", 7, "float", "10")
 y_graduation_step_entry = make_param_entry(root, "y_graduation_step", 8, "float > 0 | 0 for no graduation", "1")
 
 trace_step_entry = make_param_entry(root, "trace_step", 9, "float > 0", "0.1")
+automatic_tracestep_label = ctk.CTkLabel(root, text="")
+automatic_tracestep_label.grid(row=9, column=2)
+automatic_tracestep()
 
 draw_points_param = make_param_check_box(root, "draw_points ?", 10, "might need lower trace_step | accurate")
 draw_points_check_box = draw_points_param[0]
