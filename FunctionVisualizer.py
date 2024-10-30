@@ -16,7 +16,7 @@ class Function:
                 if type(image) is not complex:
                     images[x] = image
 
-                elif type(errors_list) is list:
+                elif type(errors_list) is list and "Result Is Complex Number" not in errors_list:
                     errors_list.append("Result Is Complex Number")
 
             except (ZeroDivisionError,ValueError, OverflowError) as e:
