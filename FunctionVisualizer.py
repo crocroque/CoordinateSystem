@@ -86,8 +86,8 @@ class CoordinateSystem:
         self.len_y_axis = abs(self.y_max - self.y_min)
 
         self.x_coordinate_yaxis = self.width * (-self.x_min) / self.len_x_axis
-        self.y_coordinate_xaxis = self.height * (-self.y_min) / self.len_y_axis
-
+        self.y_coordinate_xaxis = self.height * (1 - (- self.y_min) / self.len_y_axis)
+        print(self.y_coordinate_xaxis)
         self.draw_lines_between_points = draw_lines_between_points
         self.draw_points = draw_points
 
@@ -273,3 +273,13 @@ class CoordinateSystem:
             pygame.display.update()
 
         pygame.quit()
+
+
+if __name__ == '__main__':
+
+    def f(x):
+        return math.sqrt(x) ** (x**x)
+
+    x = CoordinateSystem(f, (800, 800), -10, 10, 1, -10, 10, 1, 0.01)
+
+    x.show()
