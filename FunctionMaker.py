@@ -1,285 +1,176 @@
+from tkinter import *
+from tkinter import messagebox, colorchooser
+from FunctionVisualizer import CoordinateSystem, FunctionEvaluatingError
 import math
-from tkinter import Tk, messagebox
-import pygame
 
 
-class Function:
-    def __init__(self, expression):
-        self.expression = expression
+def show_function():
+    def f(x: float) -> float:
+        return eval(function_entry.get(), {"x": x, "math": math})
 
-    def get_images(self, start: int, stop: int, step: float, errors_list: list = None) -> dict:
-        images = {}
-        x = start
-        while x <= stop:
-            try:
-                image = self.expression(x)
-                if type(image) is not complex:
-                    images[x] = image
+    try:
+        system = CoordinateSystem(function=f,
+                                  screen_size=(float(win_width_entry.get()), float(win_height_entry.get())),
+                                  x_min=float(x_min_entry.get()),
+                                  x_max=float(x_max_entry.get()),
+                                  x_graduation_step=float(x_graduation_step_entry.get()),
+                                  y_min=float(y_min_entry.get()),
+                                  y_max=float(y_max_entry.get()),
+                                  y_graduation_step=float(y_graduation_step_entry.get()),
+                                  trace_step=float(trace_step_entry.get()),
+                                  draw_points=draw_points_param[1].get(),
+                                  draw_lines_between_points=draw_lines_between_points_param[1].get()
+                                  )
 
-                elif type(errors_list) is list and "Result Is Complex Number" not in errors_list:
-                    errors_list.append("Result Is Complex Number")
+        if more_option:
+            system.show(bg_color=eval(bg_color_entry.get()),
+                        point_color=eval(point_color_entry.get()),
+                        axes_color=eval(axes_color_entry.get()),
+                        graduation_color=eval(graduation_color_entry.get()),
+                        show_coordinate=show_coordinate_param[1].get(),
+                        win_title=win_title_entry.get(),
+                        show_ignored_error=show_ignored_error_param[1].get()
+                        )
+        else:
+            system.show()
 
-            except (ZeroDivisionError,ValueError, OverflowError) as e:
-                if type(errors_list) is list:
-                    if str(e) not in errors_list:
-                        errors_list.append(str(e))
+    except FunctionEvaluatingError as error:
+        messagebox.showerror(title="function error", message=error.message)
+        return
 
-                else:
-                    pass
+    except Exception as error:
+        messagebox.showerror(title="Setting Error", message=error)
+        return
 
-            x += step
 
-        return images
+def make_param_entry(win: Tk, param_name: str, row, description: str, default_value: str) -> Entry:
+    Label(win, text=param_name).grid(row=row, column=0)
+    Label(win, text=description).grid(row=row, column=2)
 
 
-class FunctionEvaluatingError(Exception):
-    def __init__(self, error):
-        self.message = f"Error while evaluating the function : \n {error}"
+    e = Entry(win)
+    e.insert(0, default_value)
+    e.grid(row=row, column=1)
+    return e
 
 
-class CoordinateSystem:
-    def __init__(self, function, screen_size: tuple, x_min: float, x_max: float, x_graduation_step: float, y_min: float, y_max: float,  y_graduation_step: float, trace_step: float, draw_points: bool = True, draw_lines_between_points: bool = False):
-        self.function = Function(function)
-        self.width, self.height = screen_size
+def ask_color(entry: Entry):
+    color_code = colorchooser.askcolor(title="Choose color")
+    entry.delete(0, END)
 
-        if x_min >= x_max:
-            raise Exception(f"x_min ({x_min}) >= x_max ({x_max})")
+    entry.insert(0, str(color_code[0]))
 
-        if y_min >= y_max:
-            raise Exception(f"y_min ({y_min}) >= y_max ({y_max})")
 
-        if x_graduation_step < 0:
-            raise Exception("x_graduation_step < 0 not allowed (x_graduation_step = 0 for no graduation)")
+def make_param_color_entry(win: Tk, param_name: str, row, default_value: str) -> Entry:
+    Label(win, text=param_name).grid(row=row, column=0)
 
-        if y_graduation_step < 0:
-            raise Exception("y_graduation_step < 0 not allowed (y_graduation_step = 0 for no graduation)")
+    e = Entry(win)
+    e.grid(row=row, column=1)
+    e.insert(0, default_value)
 
-        if trace_step <= 0:
-            raise Exception("trace_step <= 0 not allowed")
 
-        if type(draw_points) is not bool:
-            raise Exception(f"draw_points must be True or False not {type(draw_points)}")
+    Button(win, text="choose color", command=lambda : ask_color(e)).grid(row=row, column=2)
 
-        if type(draw_lines_between_points) is not bool:
-            raise Exception(f"draw_lines_between_points must be True or False not {type(draw_lines_between_points)}")
+    return e
 
-        if self.width < 0:
-            raise Exception("window_width < 0 not allowed")
 
-        if self.height < 0:
-            raise Exception("window_height < 0 not allowed")
+def make_param_check_box(win: Tk, param_name: str, row, description: str) -> (Checkbutton, BooleanVar):
+    Label(win, text=param_name).grid(row=row, column=0)
+    Label(win, text=description).grid(row=row, column=2)
 
+    var = BooleanVar()
+    check_btn = Checkbutton(win, variable=var, onvalue=True, offvalue=False)
+    check_btn.grid(row=row, column=1)
+    return check_btn, var
 
-        self.x_min = x_min
-        self.x_max = x_max
-        self.x_graduation_step = x_graduation_step
 
-        self.y_min = y_min
-        self.y_max = y_max
-        self.y_graduation_step = y_graduation_step
+def automatic_tracestep():
+    try:
+        points_number = (float(x_max_entry.get()) - float(x_min_entry.get())) / float(trace_step_entry.get())
+        text = f"{round(points_number)} points"
+        if points_number > 100000:
+            text += " (may be long try to increase the trace_step)"
 
-        self.trace_step = trace_step
+        automatic_tracestep_label.configure(text=text)
 
-        self.screen = None
+    except:
+        pass
 
-        self.len_x_axis = abs(self.x_max - self.x_min)
-        self.len_y_axis = abs(self.y_max - self.y_min)
 
-        self.x_coordinate_yaxis = self.width * (-self.x_min) / self.len_x_axis
-        self.y_coordinate_xaxis = self.height * (1 - (- self.y_min) / self.len_y_axis)
-        print(self.y_coordinate_xaxis)
-        self.draw_lines_between_points = draw_lines_between_points
-        self.draw_points = draw_points
+    root.after(100, automatic_tracestep)
 
-        self.ignored_error = []
+def make_win_title():
+    title = f"visualisation of f(x) = {function_entry.get()} ∀ 𝑥 ∈ [{x_min_entry.get()} ; {x_max_entry.get()}]"
 
-        print("system init")
+    win_title_entry.delete(0, END)
+    win_title_entry.insert(0, title)
 
 
-    def get_x_axis_pos(self) -> list[tuple[float, float], tuple[float, float]]:
-        start_pos = (0, self.y_coordinate_xaxis)
-        end_pos = (self.width, self.y_coordinate_xaxis)
+def show_more_option():
+    global more_option, bg_color_entry, point_color_entry, axes_color_entry, graduation_color_entry, show_coordinate_param, win_title_entry, show_ignored_error_param
 
-        return [start_pos, end_pos]
+    more_option_btn.destroy()
+    show_function_btn.grid(row=20, column=1)
 
+    more_option = True
+    bg_color_entry = bg_color_entry(root, "background color", 13, "(255, 255, 255)")
+    point_color_entry = point_color_entry(root, "points color", 14, "(0, 0, 0)")
+    axes_color_entry = axes_color_entry(root, "axes color", 15, "(0, 0, 0)")
+    graduation_color_entry = graduation_color_entry(root, "graduation color", 16, "(0, 0, 0)")
+    show_coordinate_param = show_coordinate_param(root, "show coordinate ?", 17, "Display the mouse coor at the top left")
+    win_title_entry = win_title_entry(root, "window title", 18, "", "function")
+    win_title_entry.configure(width=36)
+    Button(root, text="automatic title", command=make_win_title).grid(row=18, column=2)
+    show_ignored_error_param = show_ignored_error_param(root, "show ignored error ?", 19, "Display the ignored error while calculating the points")
 
-    def get_y_axis_pos(self) -> list[tuple[float, float], tuple[float, float]]:
-        start_pos = (self.x_coordinate_yaxis, 0)
-        end_pos = (self.x_coordinate_yaxis, self.height)
 
-        return [start_pos, end_pos]
+root = Tk()
+root.title("function maker")
+root.resizable(False, False)
 
+win_width_entry = make_param_entry(root, "window_width", 0, "float > 0", "500")
+win_height_entry = make_param_entry(root, "window_height", 1, "float > 0", "500")
 
-    def draw_axes(self, axes_color: tuple):
-        x_axis_pos = self.get_x_axis_pos()
-        y_axis_pos = self.get_y_axis_pos()
 
-        pygame.draw.line(self.screen, axes_color, y_axis_pos[0], y_axis_pos[1])
-        pygame.draw.line(self.screen, axes_color, x_axis_pos[0], x_axis_pos[1])
+function_entry = make_param_entry(root, "f(x) =", 2, "python syntax (math library can be used)", "")
+x_min_entry = make_param_entry(root, "x_min", 3, "float", "-10")
+x_max_entry = make_param_entry(root, "x_max", 4, "float", "10")
+x_graduation_step_entry = make_param_entry(root, "x_graduation_step", 5, "float > 0 | 0 for no graduation", "1")
 
 
-    def get_position_from_coordinate(self, coordinate: tuple) -> tuple: # position = pixel | coordinate = x_min < coor < x_max
-        x_coordinate, y_coordinate = coordinate
+y_min_entry = make_param_entry(root, "y_min", 6, "float", "-10")
+y_max_entry = make_param_entry(root, "y_max", 7, "float", "10")
+y_graduation_step_entry = make_param_entry(root, "y_graduation_step", 8, "float > 0 | 0 for no graduation", "1")
 
-        x_position = (x_coordinate - self.x_min) / (self.x_max - self.x_min) * self.width
-        y_position = self.height * (1 - (y_coordinate - self.y_min) / self.len_y_axis)
+trace_step_entry = make_param_entry(root, "trace_step", 9, "", "0.1")
+automatic_tracestep_label = Label(root, text="")
+automatic_tracestep_label.grid(row=9, column=2)
+automatic_tracestep()
 
-        return x_position, y_position
+draw_points_param = make_param_check_box(root, "draw_points ?", 10, "might need lower trace_step | accurate")
+draw_points_check_box = draw_points_param[0]
+draw_points_check_box.select() # check the box
 
+draw_lines_between_points_param = make_param_check_box(root, "draw_lines_between_points ?", 11, "less accurate | might be faster")
+draw_lines_between_points_check_box = draw_lines_between_points_param[0]
 
-    def get_coordinate_from_position(self, point: tuple) -> tuple: # position = pixel | coordinate = x_min < coor < x_max
-        x_position, y_position = point
+more_option = False
 
-        x_coordinate = (x_position / self.width) * (self.x_max - self.x_min) + self.x_min
-        y_coordinate = self.y_min + (1 - y_position / self.height) * self.len_y_axis
+show_function_btn = Button(root, text="show", command=show_function)
+show_function_btn.grid(row=12, column=1)
 
-        return x_coordinate, y_coordinate
+more_option_btn = Button(root, text="more settings", command=show_more_option)
+more_option_btn.grid(row=12, column=2)
 
+bg_color_entry = make_param_color_entry
+point_color_entry = make_param_color_entry
+axes_color_entry = make_param_color_entry
+graduation_color_entry = make_param_color_entry
 
-    def get_x_graduations(self) -> list:
-        if self.x_graduation_step == 0:
-            return []
+show_coordinate_param = make_param_check_box
 
-        graduations = []
-        x_grad = 0
-        while x_grad <= self.x_max:
+win_title_entry = make_param_entry
 
-            x, y = self.get_position_from_coordinate((x_grad, 0))
-            graduations.append((x, y))
+show_ignored_error_param = make_param_check_box
 
-            x_grad += self.x_graduation_step
-
-        x_grad = 0
-        while x_grad >= self.x_min:
-            x, y = self.get_position_from_coordinate((x_grad, 0))
-            graduations.append((x, y))
-
-            x_grad -= self.x_graduation_step
-
-        return graduations
-
-
-    def get_y_graduations(self) -> list:
-        if self.y_graduation_step == 0:
-            return []
-
-        graduations = []
-        y_grad = 0
-        while y_grad <= self.y_max:
-
-            x, y = self.get_position_from_coordinate((0, y_grad))
-            graduations.append((x, y))
-
-            y_grad += self.y_graduation_step
-
-        y_grad = 0
-        while y_grad >= self.y_min:
-            x, y = self.get_position_from_coordinate((0, y_grad))
-            graduations.append((x, y))
-
-            y_grad -= self.y_graduation_step
-
-        return graduations
-
-
-    def draw_graduations(self, x_graduation: list, y_graduation: list, graduation_color: tuple):
-        for i in x_graduation:
-            x, y = i
-            pygame.draw.line(self.screen, graduation_color, (x, y - 5), (x, y + 5))
-
-        for i in y_graduation:
-            x, y = i
-            pygame.draw.line(self.screen, graduation_color, (x - 5, y), (x + 5, y))
-
-
-    def get_curve_points(self) -> list:
-        try:
-            images = self.function.get_images(self.x_min, self.x_max, self.trace_step, errors_list=self.ignored_error)
-        except Exception as e:
-            pygame.quit()
-            raise FunctionEvaluatingError(e)
-
-        points = []
-
-        for x, y in images.items():
-            points.append(self.get_position_from_coordinate((x, y)))
-
-        return points
-
-
-    def draw_curve(self, points : list, points_color: tuple):
-        index_counter = 0
-        for point_position in points:
-            if self.draw_points:
-                x, y = point_position
-                pygame.draw.circle(self.screen, points_color, (x, y), 2)
-
-            if self.draw_lines_between_points and index_counter < len(points) - 1:
-                pygame.draw.line(self.screen, points_color, point_position, points[index_counter + 1], 3)
-                index_counter += 1
-
-
-    def get_mouse_coordinate(self):
-        mouse_pos = pygame.mouse.get_pos()
-        mouse_coor = self.get_coordinate_from_position(mouse_pos)
-        mouse_coor = round(mouse_coor[0], 1), round(mouse_coor[1], 1)
-
-        font = pygame.font.Font(None, 20)
-        text_surface = font.render(str(mouse_coor), True, (0, 0, 0))
-        text_rect = text_surface.get_rect(center=(self.width - 40, 10))
-
-        return text_surface, text_rect
-
-
-    def show(self, bg_color: tuple = (255, 255, 255), point_color: tuple = (0, 0, 0), axes_color: tuple = (0, 0, 0), graduation_color: tuple = (0, 0, 0), show_coordinate: bool = False, win_title: str = "function", show_ignored_error: bool = True):
-        pygame.init()
-
-        self.screen = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
-        pygame.display.set_caption(win_title)
-        running = True
-
-        print("getting x graduation ...")
-        x_grad = self.get_x_graduations()
-
-        print("getting y graduation...")
-        y_grad = self.get_y_graduations()
-
-        print(f"getting images and points ({(self.x_max - self.x_min) / self.trace_step})")
-        points = self.get_curve_points()
-
-        if len(self.ignored_error) > 0 and show_ignored_error:
-            list_error = ""
-            for error in self.ignored_error:
-                list_error += "- " + error + "\n"
-            messagebox_root = Tk()
-            messagebox_root.withdraw()
-            messagebox.showinfo("ignored error while calculating the points", f"ignored error (the associated point will not be displayed) :\n{list_error}")
-            messagebox_root.destroy()
-
-        while running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-
-            self.screen.fill(bg_color)
-
-            if show_coordinate:
-                text = self.get_mouse_coordinate()
-                self.screen.blit(text[0], text[1])
-
-            self.draw_axes(axes_color)
-            self.draw_graduations(x_grad, y_grad, graduation_color)
-            self.draw_curve(points, point_color)
-            pygame.display.update()
-
-        pygame.quit()
-
-
-if __name__ == '__main__':
-
-    def f(x):
-        return math.sqrt(x) ** (x**x)
-
-    x = CoordinateSystem(f, (800, 800), -10, 10, 1, -10, 10, 1, 0.01)
-
-    x.show()
+root.mainloop()
