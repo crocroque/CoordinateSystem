@@ -87,7 +87,7 @@ class CoordinateSystem:
 
         self.x_coordinate_yaxis = self.width * (-self.x_min) / self.len_x_axis
         self.y_coordinate_xaxis = self.height * (1 - (- self.y_min) / self.len_y_axis)
-        print(self.y_coordinate_xaxis)
+        
         self.draw_lines_between_points = draw_lines_between_points
         self.draw_points = draw_points
 
