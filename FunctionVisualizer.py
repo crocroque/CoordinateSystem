@@ -1,4 +1,3 @@
-import math
 from tkinter import Tk, messagebox
 import pygame
 
@@ -19,7 +18,7 @@ class Function:
                 elif type(errors_list) is list and "Result Is Complex Number" not in errors_list:
                     errors_list.append("Result Is Complex Number")
 
-            except (ZeroDivisionError,ValueError, OverflowError) as e:
+            except (ZeroDivisionError, ValueError, OverflowError) as e:
                 if type(errors_list) is list:
                     if str(e) not in errors_list:
                         errors_list.append(str(e))
@@ -38,8 +37,7 @@ class FunctionEvaluatingError(Exception):
 
 
 class CoordinateSystem:
-    def __init__(self, function, screen_size: tuple, x_min: float, x_max: float, x_graduation_step: float, y_min: float, y_max: float,  y_graduation_step: float, trace_step: float, draw_points: bool = True, draw_lines_between_points: bool = False):
-        self.function = Function(function)
+    def __init__(self, function, screen_size: tuple, x_min: float, x_max: float, x_graduation_step: float, y_min: float, y_max: float,  y_graduation_step: float, trace_step: float, draw_points: bool, draw_lines_between_points: bool):
         self.width, self.height = screen_size
 
         if x_min >= x_max:
@@ -69,6 +67,7 @@ class CoordinateSystem:
         if self.height < 0:
             raise Exception("window_height < 0 not allowed")
 
+        self.function = Function(function)
 
         self.x_min = x_min
         self.x_max = x_max
@@ -87,7 +86,6 @@ class CoordinateSystem:
 
         self.x_coordinate_yaxis = self.width * (-self.x_min) / self.len_x_axis
         self.y_coordinate_xaxis = self.height * (1 - (- self.y_min) / self.len_y_axis)
-        
         self.draw_lines_between_points = draw_lines_between_points
         self.draw_points = draw_points
 
@@ -251,9 +249,12 @@ class CoordinateSystem:
             list_error = ""
             for error in self.ignored_error:
                 list_error += "- " + error + "\n"
+
             messagebox_root = Tk()
             messagebox_root.withdraw()
+
             messagebox.showinfo("ignored error while calculating the points", f"ignored error (the associated point will not be displayed) :\n{list_error}")
+
             messagebox_root.destroy()
 
         while running:
@@ -263,14 +264,14 @@ class CoordinateSystem:
 
             self.screen.fill(bg_color)
 
+            self.draw_axes(axes_color)
+            self.draw_graduations(x_grad, y_grad, graduation_color)
+            self.draw_curve(points, point_color)
+
             if show_coordinate:
                 text = self.get_mouse_coordinate()
                 self.screen.blit(text[0], text[1])
 
-            self.draw_axes(axes_color)
-            self.draw_graduations(x_grad, y_grad, graduation_color)
-            self.draw_curve(points, point_color)
             pygame.display.update()
 
         pygame.quit()
-
