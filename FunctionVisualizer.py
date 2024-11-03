@@ -23,9 +23,6 @@ class Function:
                     if str(e) not in errors_list:
                         errors_list.append(str(e))
 
-                else:
-                    pass
-
             x += step
 
         return images
@@ -37,7 +34,7 @@ class FunctionEvaluatingError(Exception):
 
 
 class CoordinateSystem:
-    def __init__(self, function, screen_size: tuple, x_min: float, x_max: float, x_graduation_step: float, y_min: float, y_max: float,  y_graduation_step: float, trace_step: float, draw_points: bool, draw_lines_between_points: bool):
+    def __init__(self, functions: list, screen_size: tuple, x_min: float, x_max: float, x_graduation_step: float, y_min: float, y_max: float,  y_graduation_step: float, trace_step: float, draw_points: bool, draw_lines_between_points: bool):
         self.width, self.height = screen_size
 
         if x_min >= x_max:
@@ -67,7 +64,7 @@ class CoordinateSystem:
         if self.height < 0:
             raise Exception("window_height < 0 not allowed")
 
-        self.function = Function(function)
+        self.functions = functions
 
         self.x_min = x_min
         self.x_max = x_max
@@ -190,9 +187,9 @@ class CoordinateSystem:
             pygame.draw.line(self.screen, graduation_color, (x - 5, y), (x + 5, y))
 
 
-    def get_curve_points(self) -> list:
+    def get_curve_points(self, function: Function) -> list:
         try:
-            images = self.function.get_images(self.x_min, self.x_max, self.trace_step, errors_list=self.ignored_error)
+            images = function.get_images(self.x_min, self.x_max, self.trace_step, errors_list=self.ignored_error)
         except Exception as e:
             pygame.quit()
             raise FunctionEvaluatingError(e)
@@ -229,7 +226,27 @@ class CoordinateSystem:
         return text_surface, text_rect
 
 
-    def show(self, bg_color: tuple = (255, 255, 255), point_color: tuple = (0, 0, 0), axes_color: tuple = (0, 0, 0), graduation_color: tuple = (0, 0, 0), show_coordinate: bool = False, win_title: str = "function", show_ignored_error: bool = True):
+    def show_ignored_errors(self):
+        list_error = ""
+        for error in self.ignored_error:
+            list_error += "- " + error + "\n"
+
+        messagebox_root = Tk()
+        messagebox_root.withdraw()
+
+        messagebox.showinfo("ignored error while calculating the points",
+                            f"ignored error (the associated point will not be displayed) :\n{list_error}")
+
+        messagebox_root.destroy()
+
+
+    def show(self, bg_color: tuple = (255, 255, 255), points_color_list: list = None, axes_color: tuple = (0, 0, 0), graduation_color: tuple = (0, 0, 0), show_coordinate: bool = False, win_title: str = "function", show_ignored_error: bool = False):
+        if points_color_list is None:
+            points_color_list = [(0, 0, 255), (255, 0, 0), (0, 255, 0),
+                                 (0, 0, 0), (255, 192, 203), (255, 165, 0),
+                                 (139, 69, 19), (0, 255, 255)
+                                 ]
+
         pygame.init()
 
         self.screen = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
@@ -242,20 +259,14 @@ class CoordinateSystem:
         print("getting y graduation...")
         y_grad = self.get_y_graduations()
 
-        print(f"getting images and points ({(self.x_max - self.x_min) / self.trace_step})")
-        points = self.get_curve_points()
+        print(f"getting images and points ({((self.x_max - self.x_min) / self.trace_step) * len(self.functions)})")
+
+        curves_points = []
+        for func in self.functions:
+            curves_points.append(self.get_curve_points(function=func))
 
         if len(self.ignored_error) > 0 and show_ignored_error:
-            list_error = ""
-            for error in self.ignored_error:
-                list_error += "- " + error + "\n"
-
-            messagebox_root = Tk()
-            messagebox_root.withdraw()
-
-            messagebox.showinfo("ignored error while calculating the points", f"ignored error (the associated point will not be displayed) :\n{list_error}")
-
-            messagebox_root.destroy()
+            self.show_ignored_errors()
 
         while running:
             for event in pygame.event.get():
@@ -266,7 +277,9 @@ class CoordinateSystem:
 
             self.draw_axes(axes_color)
             self.draw_graduations(x_grad, y_grad, graduation_color)
-            self.draw_curve(points, point_color)
+
+            for color_index, points in enumerate(curves_points):
+                self.draw_curve(points=points, points_color=points_color_list[color_index])
 
             if show_coordinate:
                 text = self.get_mouse_coordinate()
