@@ -1,6 +1,6 @@
 from tkinter import *
 from tkinter import messagebox, colorchooser
-from FunctionVisualizer import CoordinateSystem, FunctionEvaluatingError
+from FunctionVisualizer import CoordinateSystem, FunctionEvaluatingError, Function
 import math
 
 
@@ -9,7 +9,7 @@ def show_function():
         return eval(function_entry.get(), {"x": x, "math": math})
 
     try:
-        system = CoordinateSystem(function=f,
+        system = CoordinateSystem(functions=[Function(f)],
                                   screen_size=(float(win_width_entry.get()), float(win_height_entry.get())),
                                   x_min=float(x_min_entry.get()),
                                   x_max=float(x_max_entry.get()),
@@ -24,7 +24,7 @@ def show_function():
 
         if more_option:
             system.show(bg_color=eval(bg_color_entry.get()),
-                        point_color=eval(point_color_entry.get()),
+                        points_color_list=[eval(point_color_entry.get())],
                         axes_color=eval(axes_color_entry.get()),
                         graduation_color=eval(graduation_color_entry.get()),
                         show_coordinate=show_coordinate_param[1].get(),
@@ -88,7 +88,7 @@ def automatic_tracestep():
     try:
         points_number = (float(x_max_entry.get()) - float(x_min_entry.get())) / float(trace_step_entry.get())
         text = f"{round(points_number)} points"
-        if points_number > 100000:
+        if points_number > 500000:
             text += " (may be long try to increase the trace_step)"
 
         automatic_tracestep_label.configure(text=text)
@@ -98,6 +98,7 @@ def automatic_tracestep():
 
 
     root.after(100, automatic_tracestep)
+
 
 def make_win_title():
     title = f"visualisation of f(x) = {function_entry.get()} ∀ 𝑥 ∈ [{x_min_entry.get()} ; {x_max_entry.get()}]"
