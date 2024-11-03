@@ -240,10 +240,10 @@ class CoordinateSystem:
         messagebox_root.destroy()
 
 
-    def show(self, bg_color: tuple = (255, 255, 255), points_color_list: list = None, axes_color: tuple = (0, 0, 0), graduation_color: tuple = (0, 0, 0), show_coordinate: bool = False, win_title: str = "function", show_ignored_error: bool = False):
+    def show(self, bg_color: tuple = (255, 255, 255), points_color_list: list = None, axes_color: tuple = (0, 0, 0), graduation_color: tuple = (0, 0, 0), show_coordinate: bool = False, win_title: str = "", show_ignored_error: bool = False):
         if points_color_list is None:
-            points_color_list = [(0, 0, 255), (255, 0, 0), (0, 255, 0),
-                                 (0, 0, 0), (255, 192, 203), (255, 165, 0),
+            points_color_list = [(0, 0, 0), (0, 0, 255), (255, 0, 0),
+                                 (0, 255, 0), (255, 192, 203), (255, 165, 0),
                                  (139, 69, 19), (0, 255, 255)
                                  ]
 
