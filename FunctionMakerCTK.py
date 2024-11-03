@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from tkinter import messagebox, colorchooser
-from FunctionVisualizer import CoordinateSystem, FunctionEvaluatingError
+from FunctionVisualizer import CoordinateSystem, FunctionEvaluatingError, Function
 import math
 
 
@@ -10,7 +10,7 @@ def show_function():
 
     try:
         system = CoordinateSystem(
-            function=f,
+            functions=[Function(f)],
             screen_size=(float(win_width_entry.get()), float(win_height_entry.get())),
             x_min=float(x_min_entry.get()),
             x_max=float(x_max_entry.get()),
@@ -26,7 +26,7 @@ def show_function():
         if more_option:
             system.show(
                 bg_color=eval(bg_color_entry.get()),
-                point_color=eval(point_color_entry.get()),
+                points_color_list=[eval(point_color_entry.get())],
                 axes_color=eval(axes_color_entry.get()),
                 graduation_color=eval(graduation_color_entry.get()),
                 show_coordinate=show_coordinate_param[1].get(),
@@ -77,7 +77,7 @@ def make_param_check_box(win: ctk.CTk, param_name: str, row, description: str) -
     ctk.CTkLabel(win, text=description).grid(row=row, column=2)
 
     var = ctk.BooleanVar()
-    check_btn = ctk.CTkCheckBox(win, variable=var, onvalue=True, offvalue=False)
+    check_btn = ctk.CTkCheckBox(win, variable=var, onvalue=True, offvalue=False, text="")
     check_btn.grid(row=row, column=1)
     return check_btn, var
 
@@ -120,9 +120,8 @@ def show_more_option():
     show_ignored_error_param = make_param_check_box(root, "Show Ignored Errors?", 19, "Display ignored errors during calculations")
 
 
-# Initialize CTk window
-ctk.set_appearance_mode("System")  # Modes: "System", "Dark", "Light"
-ctk.set_default_color_theme("blue")  # Themes: "blue", "green", "dark-blue"
+ctk.set_appearance_mode("System")
+ctk.set_default_color_theme("blue")
 
 root = ctk.CTk()
 root.title("Function Maker")
