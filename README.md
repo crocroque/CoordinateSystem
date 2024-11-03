@@ -55,7 +55,7 @@ if __name__ == '__main__':
 ```
 
 ### result :
-![WithCodeMultipleFunctions]("https://github.com/crocroque/FunctionVisualizer/blob/main/images/WithCodeMultipleFunction.png")
+![WithCodeMultipleFunctions](https://github.com/crocroque/FunctionVisualizer/blob/main/images/WithCodeMultipleFunction.png)
 
 ## using FunctionMaker.py
 ![FunctionMakerMenu](https://github.com/crocroque/FunctionVisualizer/blob/main/images/FunctionMakerMenu.png)
