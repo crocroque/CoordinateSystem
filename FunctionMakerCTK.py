@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from tkinter import messagebox, colorchooser
-from FunctionVisualizer import CoordinateSystem, FunctionEvaluatingError, Function
+from CoordinateSystem import CoordinateSystem, FunctionEvaluatingError, Function
 import math
 
 
@@ -10,17 +10,17 @@ def show_function():
 
     try:
         system = CoordinateSystem(
-            functions=[Function(f)],
+            graph_elements=[
+                Function(f, trace_step=float(trace_step_entry.get()),
+                         draw_points=draw_points_param[1].get(),
+                         draw_lines_between_points=draw_lines_between_points_param[1].get())],
             screen_size=(float(win_width_entry.get()), float(win_height_entry.get())),
             x_min=float(x_min_entry.get()),
             x_max=float(x_max_entry.get()),
             x_graduation_step=float(x_graduation_step_entry.get()),
             y_min=float(y_min_entry.get()),
             y_max=float(y_max_entry.get()),
-            y_graduation_step=float(y_graduation_step_entry.get()),
-            trace_step=float(trace_step_entry.get()),
-            draw_points=draw_points_param[1].get(),
-            draw_lines_between_points=draw_lines_between_points_param[1].get()
+            y_graduation_step=float(y_graduation_step_entry.get())
         )
 
         if more_option:
