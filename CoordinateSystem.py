@@ -289,11 +289,10 @@ class CoordinateSystem:
     def show_ignored_errors(self):
         list_error = ""
         for error in self.ignored_error.items():
-            if len(error[1]) > 0:
-                list_error += f"- function {error[0]} : \n"
+            list_error += f"- function {error[0]} : \n"
 
-                for i in error[1]:
-                    list_error += f"  - {i}\n"
+            for i in error[1]:
+                list_error += f"  - {i}\n"
 
         messagebox_root = Tk()
         messagebox_root.withdraw()
