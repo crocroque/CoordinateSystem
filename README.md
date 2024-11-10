@@ -59,8 +59,8 @@ if __name__ == '__main__':
 ## using FunctionMaker.py
 ![FunctionMakerMenu](https://github.com/crocroque/FunctionVisualizer/blob/main/images/FunctionMakerMenu.png)
 
-just enter the settings that you want and click "show"
-for more settings click "more settings"
+Just enter the settings that you want and click "show".
+For more settings click "more settings"
 
 ## usage example
 ![FunctionMakerFilled](https://github.com/crocroque/FunctionVisualizer/blob/main/images/FunctionMakerFilled.png)
