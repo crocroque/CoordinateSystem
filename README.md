@@ -1,24 +1,23 @@
-# FunctionVisualizer
+# CoordinateSystem
 
 ## visualisation of one function by code :
 ```python
-from FunctionVisualizer import CoordinateSystem, Function
+from CoordinateSystem import CoordinateSystem, Function
 
 if __name__ == '__main__':
     def f(x):
-        return x**2 + 3 * x - 5
-    
-    my_function = Function(f)
-    system = CoordinateSystem(functions=[my_function], # <- have to be in a list
+        return x ** 2 + 3 * x - 5
+
+    my_function = Function(f, trace_step=0.01, draw_points=False, draw_lines_between_points=True)
+
+    system = CoordinateSystem(graph_elements=[my_function], # <- have to be a list
                               screen_size=(500, 500),
                               x_min=-10, x_max=10, x_graduation_step=1,
                               y_min=-10, y_max=10, y_graduation_step=1,
-                              trace_step=0.1,
-                              draw_points=False,
-                              draw_lines_between_points=True
+
                               )
 
-    system.show() # can write optional parameter (bg_color, points_color_list, axes_color, graduation_color, show_coordinate, win_title, show_ignored_error)
+    system.show()  # can write optional parameter (bg_color, points_color_list, axes_color, graduation_color, show_coordinate, win_title, show_ignored_error)
    
 ```
 
@@ -28,7 +27,7 @@ if __name__ == '__main__':
 ## visualisation of multiple functions by code :
 ```python
 import math
-from FunctionVisualizer import CoordinateSystem, Function
+from CoordinateSystem import CoordinateSystem, Function
 
 if __name__ == '__main__':
     def f(x):
@@ -40,15 +39,15 @@ if __name__ == '__main__':
     def h(x):
         return x
 
-    my_functions = [Function(f), Function(g), Function(h)] # <- have to be a list
+    my_functions = [Function(f, trace_step=0.01, draw_points=False, draw_lines_between_points=True),
+                    Function(g, trace_step=0.01, draw_points=False, draw_lines_between_points=True),
+                    Function(h, trace_step=0.01, draw_points=False, draw_lines_between_points=True)] # <- have to be a list
 
-    system = CoordinateSystem(functions=my_functions,
+    system = CoordinateSystem(graph_elements=my_functions,
                               screen_size=(500, 500),
                               x_min=-10, x_max=10, x_graduation_step=1,
                               y_min=-10, y_max=10, y_graduation_step=1,
-                              trace_step=0.1,
-                              draw_points=False,
-                              draw_lines_between_points=True
+
                               )
 
     system.show()  # can write optional parameter (bg_color, points_color_list, axes_color, graduation_color, show_coordinate, win_title, show_ignored_error)
