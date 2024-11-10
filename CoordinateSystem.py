@@ -3,29 +3,98 @@ import pygame
 
 
 class Function:
-    def __init__(self, expression):
+    def __init__(self, expression, trace_step: float = 1, draw_points: bool = False, draw_lines_between_points: bool = True):
         self.expression = expression
 
-    def get_images(self, start: int, stop: int, step: float, errors_list: list = None) -> dict:
+        self.trace_step = trace_step
+        self.draw_points = draw_points
+        self.draw_lines_between_points = draw_lines_between_points
+
+        if trace_step < 0:
+            raise ValueError("trace_step must be >= 0")
+
+        if type(draw_points) is not bool:
+            raise TypeError(f"draw_points must be True or False not {type(draw_points)}")
+
+        if type(draw_lines_between_points) is not bool:
+            raise TypeError(f"draw_lines_between_points must be True or False not {type(draw_lines_between_points)}")
+
+    def get_images(self, start: int, stop: int, step: float, errors_dict: dict = None) -> dict[int: float]:
         images = {}
         x = start
+        errors_dict.setdefault(self.expression.__name__, [])
         while x <= stop:
             try:
                 image = self.expression(x)
                 if type(image) is not complex:
                     images[x] = image
+                elif type(errors_dict) is dict and not any("Result Is Complex Number" in values for values in errors_dict.values()):
+                    errors_dict[f"{self.expression.__name__}"].append("Result Is Complex Number")
 
-                elif type(errors_list) is list and "Result Is Complex Number" not in errors_list:
-                    errors_list.append("Result Is Complex Number")
 
             except (ZeroDivisionError, ValueError, OverflowError) as e:
-                if type(errors_list) is list:
-                    if str(e) not in errors_list:
-                        errors_list.append(str(e))
+                if type(errors_dict) is dict and not any(str(e) in values for values in errors_dict.values()):
+                    errors_dict[f"{self.expression.__name__}"].append(str(e))
 
             x += step
 
         return images
+
+
+
+class Sequence:
+    def __init__(self, formula, n_min: int = 0, trace_step: int = 1, draw_points: bool = True, draw_lines_between_points: bool = False):
+        self.formula = formula
+
+        self.trace_step = trace_step
+        self.draw_points = draw_points
+        self.draw_lines_between_points = draw_lines_between_points
+        self.n_min = n_min
+        if n_min < 0:
+            raise ValueError("n_min must be >= 0")
+
+        if type(trace_step) is not int:
+            raise TypeError(f"trace_step must be int for Sequence (not {type(trace_step)})")
+
+        if trace_step < 0:
+            raise ValueError("trace_step must be >= 0")
+
+        if type(draw_points) is not bool:
+            raise TypeError(f"draw_points must be True or False not {type(draw_points)}")
+
+        if type(draw_lines_between_points) is not bool:
+            raise TypeError(f"draw_lines_between_points must be True or False not {type(draw_lines_between_points)}")
+
+    def get_terms(self, start: int, stop: int, step: int, errors_dict: dict = None) -> dict[int: float]:
+        terms = {}
+        param_for_loop = []
+        errors_dict.setdefault(self.formula.__name__, [])
+
+        for i in {start: "start", stop: "stop", step: "step"}.items():
+            if type(i[0]) is int:
+                param_for_loop.append(i[0])
+            else:
+                if type(errors_dict) is dict:
+
+                    errors_dict[f"{self.formula.__name__}"].append(f"{i[1]} transformed in int ({i[0]} to {int(i[0])})")
+
+                param_for_loop.append(int(i[0]))
+
+        for x in range(*param_for_loop):
+            try:
+                term = self.formula(x)
+                if type(term) is not complex:
+                    terms[x] = term
+
+                elif type(errors_dict) is dict and not any("Result Is Complex Number" in values for values in errors_dict.values()):
+                    errors_dict[f"{self.formula.__name__}"].append("Result Is Complex Number")
+
+            except (ZeroDivisionError, ValueError, OverflowError) as e:
+                if type(errors_dict) is dict and not any(str(e) in values for values in errors_dict.values()):
+                    errors_dict[f"{self.formula.__name__}"].append(str(e))
+
+        return terms
+
 
 
 class FunctionEvaluatingError(Exception):
@@ -34,37 +103,28 @@ class FunctionEvaluatingError(Exception):
 
 
 class CoordinateSystem:
-    def __init__(self, functions: list, screen_size: tuple, x_min: float, x_max: float, x_graduation_step: float, y_min: float, y_max: float,  y_graduation_step: float, trace_step: float, draw_points: bool, draw_lines_between_points: bool):
+    def __init__(self, graph_elements: list, screen_size: tuple, x_min: float, x_max: float, x_graduation_step: float, y_min: float, y_max: float,  y_graduation_step: float):
         self.width, self.height = screen_size
 
         if x_min >= x_max:
-            raise Exception(f"x_min ({x_min}) >= x_max ({x_max})")
+            raise ValueError(f"x_min ({x_min}) must be less than x_max ({x_max})")
 
         if y_min >= y_max:
-            raise Exception(f"y_min ({y_min}) >= y_max ({y_max})")
+            raise ValueError(f"y_min ({y_min}) must be less than y_max ({y_max})")
 
         if x_graduation_step < 0:
-            raise Exception("x_graduation_step < 0 not allowed (x_graduation_step = 0 for no graduation)")
+            raise ValueError("x_graduation_step must be >= 0 (0 for no graduation)")
 
         if y_graduation_step < 0:
-            raise Exception("y_graduation_step < 0 not allowed (y_graduation_step = 0 for no graduation)")
+            raise ValueError("y_graduation_step must be >= 0 (0 for no graduation)")
 
-        if trace_step <= 0:
-            raise Exception("trace_step <= 0 not allowed")
+        if not isinstance(graph_elements, list):
+            raise TypeError(f"graph_elements must be a list, not {type(graph_elements)}")
 
-        if type(draw_points) is not bool:
-            raise Exception(f"draw_points must be True or False not {type(draw_points)}")
+        if self.width < 0 or self.height < 0:
+            raise ValueError("screen dimensions must be non-negative")
 
-        if type(draw_lines_between_points) is not bool:
-            raise Exception(f"draw_lines_between_points must be True or False not {type(draw_lines_between_points)}")
-
-        if self.width < 0:
-            raise Exception("window_width < 0 not allowed")
-
-        if self.height < 0:
-            raise Exception("window_height < 0 not allowed")
-
-        self.functions = functions
+        self.graph_elements = graph_elements
 
         self.x_min = x_min
         self.x_max = x_max
@@ -74,8 +134,6 @@ class CoordinateSystem:
         self.y_max = y_max
         self.y_graduation_step = y_graduation_step
 
-        self.trace_step = trace_step
-
         self.screen = None
 
         self.len_x_axis = abs(self.x_max - self.x_min)
@@ -83,10 +141,9 @@ class CoordinateSystem:
 
         self.x_coordinate_yaxis = self.width * (-self.x_min) / self.len_x_axis
         self.y_coordinate_xaxis = self.height * (1 - (- self.y_min) / self.len_y_axis)
-        self.draw_lines_between_points = draw_lines_between_points
-        self.draw_points = draw_points
 
-        self.ignored_error = []
+
+        self.ignored_error = {}
 
         print("system init")
 
@@ -187,29 +244,32 @@ class CoordinateSystem:
             pygame.draw.line(self.screen, graduation_color, (x - 5, y), (x + 5, y))
 
 
-    def get_curve_points(self, function: Function) -> list:
+    def get_curve_points(self, element) -> list:
         try:
-            images = function.get_images(self.x_min, self.x_max, self.trace_step, errors_list=self.ignored_error)
+            if type(element) is Function:
+                points_coordinate = element.get_images(start=self.x_min, stop=self.x_max, step=element.trace_step, errors_dict=self.ignored_error)
+            elif type(element) is Sequence:
+                points_coordinate = element.get_terms(start=element.n_min, stop=self.x_max, step=element.trace_step, errors_dict=self.ignored_error)
         except Exception as e:
             pygame.quit()
             raise FunctionEvaluatingError(e)
 
         points = []
 
-        for x, y in images.items():
+        for x, y in points_coordinate.items():
             points.append(self.get_position_from_coordinate((x, y)))
 
         return points
 
 
-    def draw_curve(self, points : list, points_color: tuple):
+    def draw_curve(self, points : list, points_color: tuple, draw_points: bool, draw_lines_between_points: bool):
         index_counter = 0
         for point_position in points:
-            if self.draw_points:
+            if draw_points:
                 x, y = point_position
                 pygame.draw.circle(self.screen, points_color, (x, y), 2)
 
-            if self.draw_lines_between_points and index_counter < len(points) - 1:
+            if draw_lines_between_points and index_counter < len(points) - 1:
                 pygame.draw.line(self.screen, points_color, point_position, points[index_counter + 1], 3)
                 index_counter += 1
 
@@ -228,8 +288,12 @@ class CoordinateSystem:
 
     def show_ignored_errors(self):
         list_error = ""
-        for error in self.ignored_error:
-            list_error += "- " + error + "\n"
+        for error in self.ignored_error.items():
+            if len(error[1]) > 0:
+                list_error += f"- function {error[0]} : \n"
+
+                for i in error[1]:
+                    list_error += f"  - {i}\n"
 
         messagebox_root = Tk()
         messagebox_root.withdraw()
@@ -259,13 +323,13 @@ class CoordinateSystem:
         print("getting y graduation...")
         y_grad = self.get_y_graduations()
 
-        print(f"getting images and points ({((self.x_max - self.x_min) / self.trace_step) * len(self.functions)})")
-
         curves_points = []
-        for func in self.functions:
-            curves_points.append(self.get_curve_points(function=func))
+        for element in self.graph_elements:
+            print(f"getting images and points ({((self.x_max - self.x_min) / element.trace_step)})")
 
-        if len(self.ignored_error) > 0 and show_ignored_error:
+            curves_points.append([element, self.get_curve_points(element=element)])
+
+        if show_ignored_error and any(len(values) > 0 for values in self.ignored_error.values()):
             self.show_ignored_errors()
 
         while running:
@@ -278,8 +342,8 @@ class CoordinateSystem:
             self.draw_axes(axes_color)
             self.draw_graduations(x_grad, y_grad, graduation_color)
 
-            for color_index, points in enumerate(curves_points):
-                self.draw_curve(points=points, points_color=points_color_list[color_index])
+            for color_index, (element, points) in enumerate(curves_points):
+                self.draw_curve(points=points, points_color=points_color_list[color_index], draw_points=element.draw_points, draw_lines_between_points=element.draw_lines_between_points)
 
             if show_coordinate:
                 text = self.get_mouse_coordinate()
