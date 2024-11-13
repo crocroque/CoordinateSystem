@@ -102,6 +102,7 @@ class Sequence:
 class Vector:
     def __init__(self, coordinate: tuple, start_coordinate: tuple = (0, 0), draw_arrow: bool = True,
                  draw_points: bool = False, draw_lines_between_points: bool = False):
+
         if type(draw_arrow) is not bool:
             raise TypeError(f"draw_arrow must be True or False not {type(draw_arrow)}")
         if type(draw_points) is not bool:
@@ -113,26 +114,48 @@ class Vector:
         self.draw_points = draw_points
         self.draw_lines_between_points = draw_lines_between_points
 
-        self.coordinate = coordinate
-        self.x, self.y = self.coordinate
+        self.x, self.y = coordinate
+
         self.start_coordinate = start_coordinate
 
-        self.trace_step = 1
 
     def get_points(self):
         points = {self.start_coordinate[0]: self.start_coordinate[1],
                   self.start_coordinate[0] + self.x: self.start_coordinate[1] + self.y}
+
         return points
 
-    def __add__(self, other):
+
+    def operation(self, sign: str, other):
         if isinstance(other, Vector):
-            return Vector(coordinate=(self.x + other.x, self.y + other.y), draw_arrow=self.draw_arrow,
+            x = eval(f"{self.x}{sign}{other.x}")
+            y = eval(f"{self.y}{sign}{other.y}")
+
+            return Vector(coordinate=(x, y), draw_arrow=self.draw_arrow,
                           draw_points=self.draw_points, draw_lines_between_points=self.draw_lines_between_points)
 
+    def __add__(self, other):
+        return self.operation(sign="+", other=other)
+
     def __sub__(self, other):
-        if isinstance(other, Vector):
-            return Vector(coordinate=(self.x - other.x, self.y - other.y), draw_arrow=self.draw_arrow,
+        return self.operation(sign="-", other=other)
+
+    def __mul__(self, other):
+        if isinstance(other, (int, float)):
+            return Vector(coordinate=(self.x * other, self.y * other), draw_arrow=self.draw_arrow,
                           draw_points=self.draw_points, draw_lines_between_points=self.draw_lines_between_points)
+
+        return self.operation(sign="*", other=other)
+
+    def __rmul__(self, other):
+        return self.__mul__(other)
+
+    def __truediv__(self, other):
+        if isinstance(other, (int, float)):
+            return Vector(coordinate=(self.x / other, self.y / other), start_coordinate=self.start_coordinate, draw_arrow=self.draw_arrow,
+                          draw_points=self.draw_points, draw_lines_between_points=self.draw_lines_between_points)
+
+        return self.operation(sign="/", other=other)
 
     def __pos__(self):
         return Vector(coordinate=(+self.x, +self.y), draw_arrow=self.draw_arrow,
@@ -143,7 +166,7 @@ class Vector:
                       draw_points=self.draw_points, draw_lines_between_points=self.draw_lines_between_points)
 
     def __repr__(self):
-        return f"Vector({self.x} ; {self.y}) starting at ({self.start_coordinate[0]} ; {self.start_coordinate[1]})"
+        return f"Vector(x={self.x} ; y={self.y}) starting at (x={self.start_coordinate[0]} ; y={self.start_coordinate[1]})"
 
 
 class FunctionEvaluatingError(Exception):
@@ -294,6 +317,7 @@ class CoordinateSystem:
                                                       errors_dict=self.ignored_error)
             elif type(element) is Vector:
                 points_coordinate = element.get_points()
+
         except Exception as e:
             pygame.quit()
             raise FunctionEvaluatingError(e)
