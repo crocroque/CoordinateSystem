@@ -17,7 +17,7 @@ if __name__ == '__main__':
 
                               )
 
-    system.show()  # can write optional parameter (bg_color, points_color_list, axes_color, graduation_color, show_coordinate, win_title, show_ignored_error)
+    system.show()  # can write optional parameter (background_color, points_color_list, axes_color, graduation_color, show_coordinate, win_title, show_ignored_error)
    
 ```
 
@@ -50,7 +50,7 @@ if __name__ == '__main__':
 
                               )
 
-    system.show()  # can write optional parameter (bg_color, points_color_list, axes_color, graduation_color, show_coordinate, win_title, show_ignored_error)
+    system.show()  # can write optional parameter (background_color, points_color_list, axes_color, graduation_color, show_coordinate, win_title, show_ignored_error)
 ```
 
 ### result :
@@ -90,7 +90,7 @@ if __name__ == '__main__':
 
                               )
 
-    system.show()  # can write optional parameter (bg_color, points_color_list, axes_color, graduation_color, show_coordinate, win_title, show_ignored_error)
+    system.show()  # can write optional parameter (background_color, points_color_list, axes_color, graduation_color, show_coordinate, win_title, show_ignored_error)
 ```
 
 ### result :
@@ -113,7 +113,7 @@ if __name__ == '__main__':
 
                               )
 
-    system.show()  # can write optional parameter (bg_color, points_color_list, axes_color, graduation_color, show_coordinate, win_title, show_ignored_error)
+    system.show()  # can write optional parameter (background_color, points_color_list, axes_color, graduation_color, show_coordinate, win_title, show_ignored_error)
 ```
 
 ### result :
