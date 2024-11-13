@@ -17,7 +17,8 @@ if __name__ == '__main__':
 
                               )
 
-    system.show()  # can write optional parameter (background_color, points_color_list, axes_color, graduation_color, show_coordinate, win_title, show_ignored_error)
+    system.show()  # can write optional parameter (background_color, points_color_list, axes_color, graduation_color, show_coordinate,
+                   # win_title, show_ignored_error, show_x_graduation_coordinate, show_y_graduation_coordinate)
    
 ```
 
@@ -50,7 +51,8 @@ if __name__ == '__main__':
 
                               )
 
-    system.show()  # can write optional parameter (background_color, points_color_list, axes_color, graduation_color, show_coordinate, win_title, show_ignored_error)
+    system.show()  # can write optional parameter (background_color, points_color_list, axes_color, graduation_color, show_coordinate,
+                   # win_title, show_ignored_error, show_x_graduation_coordinate, show_y_graduation_coordinate)
 ```
 
 ### result :
@@ -90,7 +92,8 @@ if __name__ == '__main__':
 
                               )
 
-    system.show()  # can write optional parameter (background_color, points_color_list, axes_color, graduation_color, show_coordinate, win_title, show_ignored_error)
+    system.show()  # can write optional parameter (background_color, points_color_list, axes_color, graduation_color, show_coordinate,
+                   # win_title, show_ignored_error, show_x_graduation_coordinate, show_y_graduation_coordinate)
 ```
 
 ### result :
@@ -113,7 +116,8 @@ if __name__ == '__main__':
 
                               )
 
-    system.show()  # can write optional parameter (background_color, points_color_list, axes_color, graduation_color, show_coordinate, win_title, show_ignored_error)
+    system.show()  # can write optional parameter (background_color, points_color_list, axes_color, graduation_color, show_coordinate,
+                   # win_title, show_ignored_error, show_x_graduation_coordinate, show_y_graduation_coordinate)
 ```
 
 ### result :
