@@ -207,6 +207,8 @@ class CoordinateSystem:
         self.y_max = y_max
         self.y_graduation_step = y_graduation_step
 
+        self.graduation_coordinate = []
+
         self.screen = None
 
         self.len_x_axis = abs(self.x_max - self.x_min)
@@ -238,8 +240,7 @@ class CoordinateSystem:
         pygame.draw.line(self.screen, axes_color, y_axis_pos[0], y_axis_pos[1])
         pygame.draw.line(self.screen, axes_color, x_axis_pos[0], x_axis_pos[1])
 
-    def get_position_from_coordinate(self,
-                                     coordinate: tuple) -> tuple:  # position = pixel | coordinate = x_min < coor < x_max
+    def get_position_from_coordinate(self, coordinate: tuple) -> tuple:  # position = pixel | coordinate = x_min < coor < x_max
         x_coordinate, y_coordinate = coordinate
 
         x_position = (x_coordinate - self.x_min) / (self.x_max - self.x_min) * self.width
@@ -247,8 +248,7 @@ class CoordinateSystem:
 
         return x_position, y_position
 
-    def get_coordinate_from_position(self,
-                                     point: tuple) -> tuple:  # position = pixel | coordinate = x_min < coor < x_max
+    def get_coordinate_from_position(self, point: tuple) -> tuple:  # position = pixel | coordinate = x_min < coor < x_max
         x_position, y_position = point
 
         x_coordinate = (x_position / self.width) * (self.x_max - self.x_min) + self.x_min
@@ -256,15 +256,19 @@ class CoordinateSystem:
 
         return x_coordinate, y_coordinate
 
-    def get_x_graduations(self) -> list:
+    def get_x_graduations(self, show_x_graduation_coordinate: bool) -> list:
         if self.x_graduation_step == 0:
             return []
 
         graduations = []
+
         x_grad = 0
         while x_grad <= self.x_max:
             x, y = self.get_position_from_coordinate((x_grad, 0))
             graduations.append((x, y))
+
+            if show_x_graduation_coordinate:
+                self.graduation_coordinate.append([(x, y + 10), x_grad])
 
             x_grad += self.x_graduation_step
 
@@ -273,11 +277,14 @@ class CoordinateSystem:
             x, y = self.get_position_from_coordinate((x_grad, 0))
             graduations.append((x, y))
 
+            if show_x_graduation_coordinate:
+                self.graduation_coordinate.append([(x, y + 10), x_grad])
+
             x_grad -= self.x_graduation_step
 
         return graduations
 
-    def get_y_graduations(self) -> list:
+    def get_y_graduations(self, show_y_graduation_coordinate: bool) -> list:
         if self.y_graduation_step == 0:
             return []
 
@@ -287,12 +294,18 @@ class CoordinateSystem:
             x, y = self.get_position_from_coordinate((0, y_grad))
             graduations.append((x, y))
 
+            if show_y_graduation_coordinate:
+                self.graduation_coordinate.append([(x - 10, y), y_grad])
+
             y_grad += self.y_graduation_step
 
         y_grad = 0
         while y_grad >= self.y_min:
             x, y = self.get_position_from_coordinate((0, y_grad))
             graduations.append((x, y))
+
+            if show_y_graduation_coordinate:
+                self.graduation_coordinate.append([(x - 10, y), y_grad])
 
             y_grad -= self.y_graduation_step
 
@@ -306,6 +319,17 @@ class CoordinateSystem:
         for i in y_graduation:
             x, y = i
             pygame.draw.line(self.screen, graduation_color, (x - 5, y), (x + 5, y))
+
+        if len(self.graduation_coordinate) > 0:
+            font = pygame.font.Font(None, 20)
+            for i in self.graduation_coordinate:
+                coordinate = i[0]
+                text = i[1]
+
+                text_surface = font.render(str(text), True, graduation_color)
+                text_rect = text_surface.get_rect(center=coordinate)
+
+                self.screen.blit(text_surface, text_rect)
 
     def get_curve_points(self, element) -> list:
         try:
@@ -385,7 +409,7 @@ class CoordinateSystem:
         messagebox_root.destroy()
 
     def show(self, background_color: tuple = (255, 255, 255), points_color_list: list = None, axes_color: tuple = (0, 0, 0),
-             graduation_color: tuple = (0, 0, 0), show_coordinate: bool = False, win_title: str = "",
+             graduation_color: tuple = (0, 0, 0), show_x_graduation_coordinate: bool = False, show_y_graduation_coordinate: bool = False, show_coordinate: bool = False, win_title: str = "",
              show_ignored_error: bool = False):
 
         if points_color_list is None:
@@ -401,10 +425,10 @@ class CoordinateSystem:
         running = True
 
         print("getting x graduation ...")
-        x_grad = self.get_x_graduations()
+        x_grad = self.get_x_graduations(show_x_graduation_coordinate)
 
         print("getting y graduation...")
-        y_grad = self.get_y_graduations()
+        y_grad = self.get_y_graduations(show_y_graduation_coordinate)
 
         print("getting images and points")
         curves_points = []
