@@ -4,7 +4,7 @@ import math
 
 
 class Function:
-    def __init__(self, expression, trace_step: float = 1, draw_points: bool = False,
+    def __init__(self, expression, trace_step: float = 0.1, draw_points: bool = False,
                  draw_lines_between_points: bool = True):
         self.expression = expression
 
@@ -371,7 +371,7 @@ class CoordinateSystem:
     def show_ignored_errors(self):
         list_error = ""
         for error in self.ignored_error.items():
-            list_error += f"- function {error[0]} : \n"
+            list_error += f"- element {error[0]} : \n"
 
             for i in error[1]:
                 list_error += f"  - {i}\n"
@@ -384,7 +384,7 @@ class CoordinateSystem:
 
         messagebox_root.destroy()
 
-    def show(self, bg_color: tuple = (255, 255, 255), points_color_list: list = None, axes_color: tuple = (0, 0, 0),
+    def show(self, background_color: tuple = (255, 255, 255), points_color_list: list = None, axes_color: tuple = (0, 0, 0),
              graduation_color: tuple = (0, 0, 0), show_coordinate: bool = False, win_title: str = "",
              show_ignored_error: bool = False):
 
@@ -419,7 +419,7 @@ class CoordinateSystem:
                 if event.type == pygame.QUIT:
                     running = False
 
-            self.screen.fill(bg_color)
+            self.screen.fill(background_color)
 
             self.draw_axes(axes_color)
             self.draw_graduations(x_grad, y_grad, graduation_color)
