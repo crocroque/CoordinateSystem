@@ -68,7 +68,7 @@ For more settings click "more settings"
 ### result :
 ![FunctionMakerFilledResult](https://github.com/crocroque/FunctionVisualizer/blob/main/images/FunctionMakerFilledResult.png)
 
-## visualisation of a Sequence by code :
+## visualisation of a Sequence :
 ```python
 from CoordinateSystem import CoordinateSystem, Sequence
 
@@ -95,3 +95,26 @@ if __name__ == '__main__':
 
 ### result :
 ![SequenceVisualisation](https://github.com/crocroque/FunctionVisualizer/blob/main/images/SequenceVisualisation.png)
+
+## visualisation of a Vector :
+```python
+if __name__ == '__main__':
+    AB = Vector(coordinate=(10, 5), draw_lines_between_points=False, draw_points=False, draw_arrow=True)
+    BC = Vector(coordinate=(5, -6), start_coordinate=AB.end_coordinate)
+
+    AC = AB + BC
+
+    minus_demi_AB = 0.5 * -AB
+
+    system = CoordinateSystem(graph_elements=[AB, BC, AC, minus_demi_AB],  # <- have to be a list
+                              screen_size=(500, 500),
+                              x_min=-20, x_max=20, x_graduation_step=2,
+                              y_min=-10, y_max=10, y_graduation_step=1,
+
+                              )
+
+    system.show()  # can write optional parameter (bg_color, points_color_list, axes_color, graduation_color, show_coordinate, win_title, show_ignored_error)
+```
+
+### result :
+![VectorVisualisation](https://github.com/crocroque/CoordinateSystem/blob/main/images/VectorVisualisation.png)
