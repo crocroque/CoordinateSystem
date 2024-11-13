@@ -1,9 +1,11 @@
 from tkinter import Tk, messagebox
 import pygame
+import math
 
 
 class Function:
-    def __init__(self, expression, trace_step: float = 1, draw_points: bool = False, draw_lines_between_points: bool = True):
+    def __init__(self, expression, trace_step: float = 1, draw_points: bool = False,
+                 draw_lines_between_points: bool = True):
         self.expression = expression
 
         self.trace_step = trace_step
@@ -28,7 +30,8 @@ class Function:
                 image = self.expression(x)
                 if type(image) is not complex:
                     images[x] = image
-                elif type(errors_dict) is dict and not any("Result Is Complex Number" in values for values in errors_dict.values()):
+                elif type(errors_dict) is dict and not any(
+                        "Result Is Complex Number" in values for values in errors_dict.values()):
                     errors_dict[f"{self.expression.__name__}"].append("Result Is Complex Number")
 
 
@@ -41,9 +44,9 @@ class Function:
         return images
 
 
-
 class Sequence:
-    def __init__(self, formula, n_min: int = 0, trace_step: int = 1, draw_points: bool = True, draw_lines_between_points: bool = False):
+    def __init__(self, formula, n_min: int = 0, trace_step: int = 1, draw_points: bool = True,
+                 draw_lines_between_points: bool = False):
         self.formula = formula
 
         self.trace_step = trace_step
@@ -75,7 +78,6 @@ class Sequence:
                 param_for_loop.append(i[0])
             else:
                 if type(errors_dict) is dict:
-
                     errors_dict[f"{self.formula.__name__}"].append(f"{i[1]} transformed in int ({i[0]} to {int(i[0])})")
 
                 param_for_loop.append(int(i[0]))
@@ -86,7 +88,8 @@ class Sequence:
                 if type(term) is not complex:
                     terms[x] = term
 
-                elif type(errors_dict) is dict and not any("Result Is Complex Number" in values for values in errors_dict.values()):
+                elif type(errors_dict) is dict and not any(
+                        "Result Is Complex Number" in values for values in errors_dict.values()):
                     errors_dict[f"{self.formula.__name__}"].append("Result Is Complex Number")
 
             except (ZeroDivisionError, ValueError, OverflowError) as e:
@@ -96,6 +99,52 @@ class Sequence:
         return terms
 
 
+class Vector:
+    def __init__(self, coordinate: tuple, start_coordinate: tuple = (0, 0), draw_arrow: bool = True,
+                 draw_points: bool = False, draw_lines_between_points: bool = False):
+        if type(draw_arrow) is not bool:
+            raise TypeError(f"draw_arrow must be True or False not {type(draw_arrow)}")
+        if type(draw_points) is not bool:
+            raise TypeError(f"draw_points must be True or False not {type(draw_points)}")
+        if type(draw_lines_between_points) is not bool:
+            raise TypeError(f"draw_lines_between_points must be True or False not {type(draw_lines_between_points)}")
+
+        self.draw_arrow = draw_arrow
+        self.draw_points = draw_points
+        self.draw_lines_between_points = draw_lines_between_points
+
+        self.coordinate = coordinate
+        self.x, self.y = self.coordinate
+        self.start_coordinate = start_coordinate
+
+        self.trace_step = 1
+
+    def get_points(self):
+        points = {self.start_coordinate[0]: self.start_coordinate[1],
+                  self.start_coordinate[0] + self.x: self.start_coordinate[1] + self.y}
+        return points
+
+    def __add__(self, other):
+        if isinstance(other, Vector):
+            return Vector(coordinate=(self.x + other.x, self.y + other.y), draw_arrow=self.draw_arrow,
+                          draw_points=self.draw_points, draw_lines_between_points=self.draw_lines_between_points)
+
+    def __sub__(self, other):
+        if isinstance(other, Vector):
+            return Vector(coordinate=(self.x - other.x, self.y - other.y), draw_arrow=self.draw_arrow,
+                          draw_points=self.draw_points, draw_lines_between_points=self.draw_lines_between_points)
+
+    def __pos__(self):
+        return Vector(coordinate=(+self.x, +self.y), draw_arrow=self.draw_arrow,
+                      draw_points=self.draw_points, draw_lines_between_points=self.draw_lines_between_points)
+
+    def __neg__(self):
+        return Vector(coordinate=(-self.x, -self.y), draw_arrow=self.draw_arrow,
+                      draw_points=self.draw_points, draw_lines_between_points=self.draw_lines_between_points)
+
+    def __repr__(self):
+        return f"Vector({self.x} ; {self.y}) starting at ({self.start_coordinate[0]} ; {self.start_coordinate[1]})"
+
 
 class FunctionEvaluatingError(Exception):
     def __init__(self, error):
@@ -103,7 +152,8 @@ class FunctionEvaluatingError(Exception):
 
 
 class CoordinateSystem:
-    def __init__(self, graph_elements: list, screen_size: tuple, x_min: float, x_max: float, x_graduation_step: float, y_min: float, y_max: float,  y_graduation_step: float):
+    def __init__(self, graph_elements: list, screen_size: tuple, x_min: float, x_max: float, x_graduation_step: float,
+                 y_min: float, y_max: float, y_graduation_step: float):
         self.width, self.height = screen_size
 
         if x_min >= x_max:
@@ -142,11 +192,9 @@ class CoordinateSystem:
         self.x_coordinate_yaxis = self.width * (-self.x_min) / self.len_x_axis
         self.y_coordinate_xaxis = self.height * (1 - (- self.y_min) / self.len_y_axis)
 
-
         self.ignored_error = {}
 
         print("system init")
-
 
     def get_x_axis_pos(self) -> list[tuple[float, float], tuple[float, float]]:
         start_pos = (0, self.y_coordinate_xaxis)
@@ -154,13 +202,11 @@ class CoordinateSystem:
 
         return [start_pos, end_pos]
 
-
     def get_y_axis_pos(self) -> list[tuple[float, float], tuple[float, float]]:
         start_pos = (self.x_coordinate_yaxis, 0)
         end_pos = (self.x_coordinate_yaxis, self.height)
 
         return [start_pos, end_pos]
-
 
     def draw_axes(self, axes_color: tuple):
         x_axis_pos = self.get_x_axis_pos()
@@ -169,8 +215,8 @@ class CoordinateSystem:
         pygame.draw.line(self.screen, axes_color, y_axis_pos[0], y_axis_pos[1])
         pygame.draw.line(self.screen, axes_color, x_axis_pos[0], x_axis_pos[1])
 
-
-    def get_position_from_coordinate(self, coordinate: tuple) -> tuple: # position = pixel | coordinate = x_min < coor < x_max
+    def get_position_from_coordinate(self,
+                                     coordinate: tuple) -> tuple:  # position = pixel | coordinate = x_min < coor < x_max
         x_coordinate, y_coordinate = coordinate
 
         x_position = (x_coordinate - self.x_min) / (self.x_max - self.x_min) * self.width
@@ -178,15 +224,14 @@ class CoordinateSystem:
 
         return x_position, y_position
 
-
-    def get_coordinate_from_position(self, point: tuple) -> tuple: # position = pixel | coordinate = x_min < coor < x_max
+    def get_coordinate_from_position(self,
+                                     point: tuple) -> tuple:  # position = pixel | coordinate = x_min < coor < x_max
         x_position, y_position = point
 
         x_coordinate = (x_position / self.width) * (self.x_max - self.x_min) + self.x_min
         y_coordinate = self.y_min + (1 - y_position / self.height) * self.len_y_axis
 
         return x_coordinate, y_coordinate
-
 
     def get_x_graduations(self) -> list:
         if self.x_graduation_step == 0:
@@ -195,7 +240,6 @@ class CoordinateSystem:
         graduations = []
         x_grad = 0
         while x_grad <= self.x_max:
-
             x, y = self.get_position_from_coordinate((x_grad, 0))
             graduations.append((x, y))
 
@@ -210,7 +254,6 @@ class CoordinateSystem:
 
         return graduations
 
-
     def get_y_graduations(self) -> list:
         if self.y_graduation_step == 0:
             return []
@@ -218,7 +261,6 @@ class CoordinateSystem:
         graduations = []
         y_grad = 0
         while y_grad <= self.y_max:
-
             x, y = self.get_position_from_coordinate((0, y_grad))
             graduations.append((x, y))
 
@@ -233,7 +275,6 @@ class CoordinateSystem:
 
         return graduations
 
-
     def draw_graduations(self, x_graduation: list, y_graduation: list, graduation_color: tuple):
         for i in x_graduation:
             x, y = i
@@ -243,13 +284,16 @@ class CoordinateSystem:
             x, y = i
             pygame.draw.line(self.screen, graduation_color, (x - 5, y), (x + 5, y))
 
-
     def get_curve_points(self, element) -> list:
         try:
             if type(element) is Function:
-                points_coordinate = element.get_images(start=self.x_min, stop=self.x_max, step=element.trace_step, errors_dict=self.ignored_error)
+                points_coordinate = element.get_images(start=self.x_min, stop=self.x_max, step=element.trace_step,
+                                                       errors_dict=self.ignored_error)
             elif type(element) is Sequence:
-                points_coordinate = element.get_terms(start=element.n_min, stop=self.x_max, step=element.trace_step, errors_dict=self.ignored_error)
+                points_coordinate = element.get_terms(start=element.n_min, stop=self.x_max, step=element.trace_step,
+                                                      errors_dict=self.ignored_error)
+            elif type(element) is Vector:
+                points_coordinate = element.get_points()
         except Exception as e:
             pygame.quit()
             raise FunctionEvaluatingError(e)
@@ -261,18 +305,33 @@ class CoordinateSystem:
 
         return points
 
+    def draw_arrow(self, color, start_pos, end_pos, arrow_width=3, arrow_length=7):
 
-    def draw_curve(self, points : list, points_color: tuple, draw_points: bool, draw_lines_between_points: bool):
+        angle = math.atan2(end_pos[1] - start_pos[1], end_pos[0] - start_pos[0])
+
+        arrow_tip = end_pos
+
+        left = (end_pos[0] - arrow_length * math.cos(angle - math.pi / 6),
+                end_pos[1] - arrow_length * math.sin(angle - math.pi / 6))
+        right = (end_pos[0] - arrow_length * math.cos(angle + math.pi / 6),
+                 end_pos[1] - arrow_length * math.sin(angle + math.pi / 6))
+
+        pygame.draw.line(self.screen, color, start_pos, end_pos, arrow_width)
+        pygame.draw.polygon(self.screen, color, [arrow_tip, left, right])
+
+    def draw_curve(self, points: list, points_color: tuple, element) -> None:
         index_counter = 0
         for point_position in points:
-            if draw_points:
+            if type(element) is Vector and element.draw_arrow:
+                self.draw_arrow(color=points_color, start_pos=points[0], end_pos=points[1])
+
+            if element.draw_points:
                 x, y = point_position
                 pygame.draw.circle(self.screen, points_color, (x, y), 2)
 
-            if draw_lines_between_points and index_counter < len(points) - 1:
+            if element.draw_lines_between_points and index_counter < len(points) - 1:
                 pygame.draw.line(self.screen, points_color, point_position, points[index_counter + 1], 3)
                 index_counter += 1
-
 
     def get_mouse_coordinate(self):
         mouse_pos = pygame.mouse.get_pos()
@@ -284,7 +343,6 @@ class CoordinateSystem:
         text_rect = text_surface.get_rect(center=(self.width - 40, 10))
 
         return text_surface, text_rect
-
 
     def show_ignored_errors(self):
         list_error = ""
@@ -302,8 +360,10 @@ class CoordinateSystem:
 
         messagebox_root.destroy()
 
+    def show(self, bg_color: tuple = (255, 255, 255), points_color_list: list = None, axes_color: tuple = (0, 0, 0),
+             graduation_color: tuple = (0, 0, 0), show_coordinate: bool = False, win_title: str = "",
+             show_ignored_error: bool = False):
 
-    def show(self, bg_color: tuple = (255, 255, 255), points_color_list: list = None, axes_color: tuple = (0, 0, 0), graduation_color: tuple = (0, 0, 0), show_coordinate: bool = False, win_title: str = "", show_ignored_error: bool = False):
         if points_color_list is None:
             points_color_list = [(0, 0, 0), (0, 0, 255), (255, 0, 0),
                                  (0, 255, 0), (255, 192, 203), (255, 165, 0),
@@ -322,10 +382,9 @@ class CoordinateSystem:
         print("getting y graduation...")
         y_grad = self.get_y_graduations()
 
+        print("getting images and points")
         curves_points = []
         for element in self.graph_elements:
-            print(f"getting images and points ({((self.x_max - self.x_min) / element.trace_step)})")
-
             curves_points.append([element, self.get_curve_points(element=element)])
 
         if show_ignored_error and any(len(values) > 0 for values in self.ignored_error.values()):
@@ -342,7 +401,7 @@ class CoordinateSystem:
             self.draw_graduations(x_grad, y_grad, graduation_color)
 
             for color_index, (element, points) in enumerate(curves_points):
-                self.draw_curve(points=points, points_color=points_color_list[color_index], draw_points=element.draw_points, draw_lines_between_points=element.draw_lines_between_points)
+                self.draw_curve(points=points, points_color=points_color_list[color_index], element=element)
 
             if show_coordinate:
                 text = self.get_mouse_coordinate()
