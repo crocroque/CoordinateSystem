@@ -117,7 +117,7 @@ class Vector:
         self.x, self.y = coordinate
 
         self.start_coordinate = start_coordinate
-
+        self.end_coordinate = coordinate
 
     def get_points(self):
         points = {self.start_coordinate[0]: self.start_coordinate[1],
