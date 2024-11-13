@@ -25,7 +25,7 @@ def show_function():
 
         if more_option:
             system.show(
-                bg_color=eval(bg_color_entry.get()),
+                background_color=eval(bg_color_entry.get()),
                 points_color_list=[eval(point_color_entry.get())],
                 axes_color=eval(axes_color_entry.get()),
                 graduation_color=eval(graduation_color_entry.get()),
