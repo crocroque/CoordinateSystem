@@ -125,7 +125,6 @@ class Vector:
 
         return points
 
-
     def operation(self, sign: str, other):
         if isinstance(other, Vector):
             x = eval(f"{self.x}{sign}{other.x}")
@@ -152,7 +151,8 @@ class Vector:
 
     def __truediv__(self, other):
         if isinstance(other, (int, float)):
-            return Vector(coordinate=(self.x / other, self.y / other), start_coordinate=self.start_coordinate, draw_arrow=self.draw_arrow,
+            return Vector(coordinate=(self.x / other, self.y / other), start_coordinate=self.start_coordinate,
+                          draw_arrow=self.draw_arrow,
                           draw_points=self.draw_points, draw_lines_between_points=self.draw_lines_between_points)
 
         return self.operation(sign="/", other=other)
@@ -177,6 +177,7 @@ class FunctionEvaluatingError(Exception):
 class CoordinateSystem:
     def __init__(self, graph_elements: list, screen_size: tuple, x_min: float, x_max: float, x_graduation_step: float,
                  y_min: float, y_max: float, y_graduation_step: float):
+
         self.width, self.height = screen_size
 
         if x_min >= x_max:
@@ -196,6 +197,10 @@ class CoordinateSystem:
 
         if self.width < 0 or self.height < 0:
             raise ValueError("screen dimensions must be non-negative")
+
+        for element in graph_elements:
+            if not isinstance(element, (Function, Vector, Sequence)):
+                raise TypeError(f"element in graph_elements must be Function, Vector or Sequence, not {type(element)}")
 
         self.graph_elements = graph_elements
 
@@ -240,7 +245,8 @@ class CoordinateSystem:
         pygame.draw.line(self.screen, axes_color, y_axis_pos[0], y_axis_pos[1])
         pygame.draw.line(self.screen, axes_color, x_axis_pos[0], x_axis_pos[1])
 
-    def get_position_from_coordinate(self, coordinate: tuple) -> tuple:  # position = pixel | coordinate = x_min < coor < x_max
+    def get_position_from_coordinate(self,
+                                     coordinate: tuple) -> tuple:  # position = pixel | coordinate = x_min < coor < x_max
         x_coordinate, y_coordinate = coordinate
 
         x_position = (x_coordinate - self.x_min) / (self.x_max - self.x_min) * self.width
@@ -248,7 +254,8 @@ class CoordinateSystem:
 
         return x_position, y_position
 
-    def get_coordinate_from_position(self, point: tuple) -> tuple:  # position = pixel | coordinate = x_min < coor < x_max
+    def get_coordinate_from_position(self,
+                                     point: tuple) -> tuple:  # position = pixel | coordinate = x_min < coor < x_max
         x_position, y_position = point
 
         x_coordinate = (x_position / self.width) * (self.x_max - self.x_min) + self.x_min
@@ -326,7 +333,7 @@ class CoordinateSystem:
                 coordinate = i[0]
                 text = i[1]
 
-                text_surface = font.render(str(text), True, graduation_color)
+                text_surface = font.render(str(round(text, 2)), True, graduation_color)
                 text_rect = text_surface.get_rect(center=coordinate)
 
                 self.screen.blit(text_surface, text_rect)
@@ -408,8 +415,10 @@ class CoordinateSystem:
 
         messagebox_root.destroy()
 
-    def show(self, background_color: tuple = (255, 255, 255), points_color_list: list = None, axes_color: tuple = (0, 0, 0),
-             graduation_color: tuple = (0, 0, 0), show_x_graduation_coordinate: bool = False, show_y_graduation_coordinate: bool = False, show_coordinate: bool = False, win_title: str = "",
+    def show(self, background_color: tuple = (255, 255, 255), points_color_list: list = None,
+             axes_color: tuple = (0, 0, 0),
+             graduation_color: tuple = (0, 0, 0), show_x_graduation_coordinate: bool = False,
+             show_y_graduation_coordinate: bool = False, show_coordinate: bool = False, win_title: str = "",
              show_ignored_error: bool = False):
 
         if points_color_list is None:
