@@ -7,7 +7,7 @@ class Function:
     def __init__(self, expression, trace_step: float = 0.1, draw_points: bool = False,
                  draw_lines_between_points: bool = True):
         self.expression = expression
-
+        self.expression_name = expression.__name__
         self.trace_step = trace_step
         self.draw_points = draw_points
         self.draw_lines_between_points = draw_lines_between_points
@@ -24,7 +24,7 @@ class Function:
     def get_images(self, start: int, stop: int, step: float, errors_dict: dict = None) -> dict[int: float]:
         images = {}
         x = start
-        errors_dict.setdefault(self.expression.__name__, [])
+        errors_dict.setdefault(self.expression_name, [])
         while x <= stop:
             try:
                 image = self.expression(x)
@@ -32,22 +32,28 @@ class Function:
                     images[x] = image
                 elif type(errors_dict) is dict and not any(
                         "Result Is Complex Number" in values for values in errors_dict.values()):
-                    errors_dict[f"{self.expression.__name__}"].append("Result Is Complex Number")
+                    errors_dict[f"{self.expression_name}"].append("Result Is Complex Number")
 
 
             except (ZeroDivisionError, ValueError, OverflowError) as e:
                 if type(errors_dict) is dict and not any(str(e) in values for values in errors_dict.values()):
-                    errors_dict[f"{self.expression.__name__}"].append(str(e))
+                    errors_dict[f"{self.expression_name}"].append(str(e))
 
             x += step
 
         return images
 
 
+    def __repr__(self):
+        return f"Function(expression_name={self.expression_name})"
+
+
 class Sequence:
     def __init__(self, formula, n_min: int = 0, trace_step: int = 1, draw_points: bool = True,
                  draw_lines_between_points: bool = False):
+
         self.formula = formula
+        self.formula_name = formula.__name__
 
         self.trace_step = trace_step
         self.draw_points = draw_points
@@ -71,14 +77,14 @@ class Sequence:
     def get_terms(self, start: int, stop: int, step: int, errors_dict: dict = None) -> dict[int: float]:
         terms = {}
         param_for_loop = []
-        errors_dict.setdefault(self.formula.__name__, [])
+        errors_dict.setdefault(self.formula_name, [])
 
         for i in {start: "start", stop: "stop", step: "step"}.items():
             if type(i[0]) is int:
                 param_for_loop.append(i[0])
             else:
                 if type(errors_dict) is dict:
-                    errors_dict[f"{self.formula.__name__}"].append(f"{i[1]} transformed in int ({i[0]} to {int(i[0])})")
+                    errors_dict[f"{self.formula_name}"].append(f"{i[1]} transformed in int ({i[0]} to {int(i[0])})")
 
                 param_for_loop.append(int(i[0]))
 
@@ -90,13 +96,17 @@ class Sequence:
 
                 elif type(errors_dict) is dict and not any(
                         "Result Is Complex Number" in values for values in errors_dict.values()):
-                    errors_dict[f"{self.formula.__name__}"].append("Result Is Complex Number")
+                    errors_dict[f"{self.formula_name}"].append("Result Is Complex Number")
 
             except (ZeroDivisionError, ValueError, OverflowError) as e:
                 if type(errors_dict) is dict and not any(str(e) in values for values in errors_dict.values()):
-                    errors_dict[f"{self.formula.__name__}"].append(str(e))
+                    errors_dict[f"{self.formula_name}"].append(str(e))
 
         return terms
+
+
+    def __repr__(self):
+        return f"Sequence(formula_name={self.formula_name})"
 
 
 class Vector:
@@ -246,7 +256,7 @@ class CoordinateSystem:
         pygame.draw.line(self.screen, axes_color, x_axis_pos[0], x_axis_pos[1])
 
     def get_position_from_coordinate(self,
-                                     coordinate: tuple) -> tuple:  # position = pixel | coordinate = x_min < coor < x_max
+                                     coordinate: tuple) -> tuple:  # position = pixel | coordinate = x_min < coordinate < x_max
         x_coordinate, y_coordinate = coordinate
 
         x_position = (x_coordinate - self.x_min) / (self.x_max - self.x_min) * self.width
@@ -255,7 +265,7 @@ class CoordinateSystem:
         return x_position, y_position
 
     def get_coordinate_from_position(self,
-                                     point: tuple) -> tuple:  # position = pixel | coordinate = x_min < coor < x_max
+                                     point: tuple) -> tuple:  # position = pixel | coordinate = x_min < coordinate < x_max
         x_position, y_position = point
 
         x_coordinate = (x_position / self.width) * (self.x_max - self.x_min) + self.x_min
@@ -390,11 +400,11 @@ class CoordinateSystem:
 
     def get_mouse_coordinate(self):
         mouse_pos = pygame.mouse.get_pos()
-        mouse_coor = self.get_coordinate_from_position(mouse_pos)
-        mouse_coor = round(mouse_coor[0], 1), round(mouse_coor[1], 1)
+        mouse_coordinate = self.get_coordinate_from_position(mouse_pos)
+        mouse_coordinate = round(mouse_coordinate[0], 1), round(mouse_coordinate[1], 1)
 
         font = pygame.font.Font(None, 20)
-        text_surface = font.render(str(mouse_coor), True, (0, 0, 0))
+        text_surface = font.render(str(mouse_coordinate), True, (0, 0, 0))
         text_rect = text_surface.get_rect(center=(self.width - 40, 10))
 
         return text_surface, text_rect
@@ -420,6 +430,8 @@ class CoordinateSystem:
              graduation_color: tuple = (0, 0, 0), show_x_graduation_coordinate: bool = False,
              show_y_graduation_coordinate: bool = False, show_coordinate: bool = False, win_title: str = "",
              show_ignored_error: bool = False):
+
+
 
         if points_color_list is None:
             points_color_list = [(0, 0, 0), (0, 0, 255), (255, 0, 0),
@@ -467,3 +479,6 @@ class CoordinateSystem:
             pygame.display.update()
 
         pygame.quit()
+
+    def __repr__(self):
+        return f"CoordinateSystem(graph_elements: {self.graph_elements}, x_min={self.x_min}, x_max={self.x_max}, y_min={self.y_min}, y_max={self.y_max})"
