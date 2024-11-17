@@ -28,15 +28,16 @@ class Function:
         while x <= stop:
             try:
                 image = self.expression(x)
-                if type(image) is not complex:
-                    images[x] = image
-                elif type(errors_dict) is dict and not any(
-                        "Result Is Complex Number" in values for values in errors_dict.values()):
-                    errors_dict[f"{self.expression_name}"].append("Result Is Complex Number")
+                if image is None:
+                    raise ValueError("Result Is None")
 
+                if isinstance(image, complex):
+                    raise ValueError("Result Is Complex Number")
 
-            except (ZeroDivisionError, ValueError, OverflowError) as e:
-                if type(errors_dict) is dict and not any(str(e) in values for values in errors_dict.values()):
+                images[x] = image
+
+            except (ZeroDivisionError, ValueError, OverflowError, TypeError) as e:
+                if isinstance(errors_dict, dict) and not any(str(e) in values for values in errors_dict.values()):
                     errors_dict[f"{self.expression_name}"].append(str(e))
 
             x += step
@@ -91,12 +92,13 @@ class Sequence:
         for x in range(*param_for_loop):
             try:
                 term = self.formula(x)
-                if type(term) is not complex:
-                    terms[x] = term
+                if isinstance(term, complex):
+                    raise ValueError("Result Is Complex Number")
 
-                elif type(errors_dict) is dict and not any(
-                        "Result Is Complex Number" in values for values in errors_dict.values()):
-                    errors_dict[f"{self.formula_name}"].append("Result Is Complex Number")
+                if term is None:
+                    raise ValueError("Result Is None")
+
+                terms[x] = term
 
             except (ZeroDivisionError, ValueError, OverflowError) as e:
                 if type(errors_dict) is dict and not any(str(e) in values for values in errors_dict.values()):
