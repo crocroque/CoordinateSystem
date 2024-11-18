@@ -235,24 +235,38 @@ class CoordinateSystem:
         self.y_coordinate_xaxis = self.height * (1 - (- self.y_min) / self.len_y_axis)
 
         self.ignored_error = {}
-        
+
+        self.getting_points = None
+
+        self.curves_points = []
+
+        self.x_grad = []
+        self.y_grad = []
+
         print("system init")
 
-    def get_x_axis_pos(self) -> list[tuple[float, float], tuple[float, float]]:
+    def get_axes_info(self):
+        self.len_x_axis = abs(self.x_max - self.x_min)
+        self.len_y_axis = abs(self.y_max - self.y_min)
+
+        self.x_coordinate_yaxis = self.width * (-self.x_min) / self.len_x_axis
+        self.y_coordinate_xaxis = self.height * (1 - (- self.y_min) / self.len_y_axis)
+
+    def get_x_axis_position(self) -> list[tuple[float, float], tuple[float, float]]:
         start_pos = (0, self.y_coordinate_xaxis)
         end_pos = (self.width, self.y_coordinate_xaxis)
 
         return [start_pos, end_pos]
 
-    def get_y_axis_pos(self) -> list[tuple[float, float], tuple[float, float]]:
+    def get_y_axis_position(self) -> list[tuple[float, float], tuple[float, float]]:
         start_pos = (self.x_coordinate_yaxis, 0)
         end_pos = (self.x_coordinate_yaxis, self.height)
 
         return [start_pos, end_pos]
 
     def draw_axes(self, axes_color: tuple):
-        x_axis_pos = self.get_x_axis_pos()
-        y_axis_pos = self.get_y_axis_pos()
+        x_axis_pos = self.get_x_axis_position()
+        y_axis_pos = self.get_y_axis_position()
 
         pygame.draw.line(self.screen, axes_color, y_axis_pos[0], y_axis_pos[1])
         pygame.draw.line(self.screen, axes_color, x_axis_pos[0], x_axis_pos[1])
@@ -427,13 +441,48 @@ class CoordinateSystem:
 
         messagebox_root.destroy()
 
+    def get_graduation_and_points(self, show_x_graduation_coordinate: bool, show_y_graduation_coordinate: bool):
+        self.graduation_coordinate = []
+
+        self.x_grad = self.get_x_graduations(show_x_graduation_coordinate)
+
+        self.y_grad = self.get_y_graduations(show_y_graduation_coordinate)
+
+        self.curves_points = []
+        for element in self.graph_elements:
+
+            self.curves_points.append([element, self.get_curve_points(element=element)])
+
+
+    def move(self, x_velocity: float, y_velocity: float):
+
+        key = pygame.key.get_pressed()
+
+        if key[pygame.K_RIGHT]:
+            self.x_max += x_velocity
+            self.x_min += x_velocity
+            self.getting_points = True
+
+        if key[pygame.K_LEFT]:
+            self.x_min -= x_velocity
+            self.x_max -= x_velocity
+            self.getting_points = True
+
+        if key[pygame.K_UP]:
+            self.y_min += y_velocity
+            self.y_max += y_velocity
+            self.getting_points = True
+
+        if key[pygame.K_DOWN]:
+            self.y_min -= y_velocity
+            self.y_max -= y_velocity
+            self.getting_points = True
+
     def show(self, background_color: tuple = (255, 255, 255), points_color_list: list = None,
              axes_color: tuple = (0, 0, 0),
              graduation_color: tuple = (0, 0, 0), show_x_graduation_coordinate: bool = False,
              show_y_graduation_coordinate: bool = False, show_coordinate: bool = False, win_title: str = "",
-             show_ignored_error: bool = False):
-
-
+             show_ignored_error: bool = False, x_step_movement: float = 0.5, y_step_movement: float = 0.5):
 
         if points_color_list is None:
             points_color_list = [(0, 0, 0), (0, 0, 255), (255, 0, 0),
@@ -446,32 +495,30 @@ class CoordinateSystem:
         self.screen = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
         pygame.display.set_caption(win_title)
         running = True
-
-        print("getting x graduation ...")
-        x_grad = self.get_x_graduations(show_x_graduation_coordinate)
-
-        print("getting y graduation...")
-        y_grad = self.get_y_graduations(show_y_graduation_coordinate)
-
-        print("getting images and points")
-        curves_points = []
-        for element in self.graph_elements:
-            curves_points.append([element, self.get_curve_points(element=element)])
-
-        if show_ignored_error and any(len(values) > 0 for values in self.ignored_error.values()):
-            self.show_ignored_errors()
+        self.getting_points = True
 
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-
             self.screen.fill(background_color)
 
-            self.draw_axes(axes_color)
-            self.draw_graduations(x_grad, y_grad, graduation_color)
+            self.move(x_step_movement, y_step_movement)
 
-            for color_index, (element, points) in enumerate(curves_points):
+            if self.getting_points:
+                self.get_axes_info()
+
+                self.get_graduation_and_points(show_x_graduation_coordinate, show_y_graduation_coordinate)
+
+                if show_ignored_error and any(len(values) > 0 for values in self.ignored_error.values()):
+                    self.show_ignored_errors()
+
+                self.getting_points = False
+
+            self.draw_axes(axes_color)
+            self.draw_graduations(self.x_grad, self.y_grad, graduation_color)
+
+            for color_index, (element, points) in enumerate(self.curves_points):
                 self.draw_curve(points=points, points_color=points_color_list[color_index], element=element)
 
             if show_coordinate:
