@@ -235,7 +235,7 @@ class CoordinateSystem:
         self.y_coordinate_xaxis = self.height * (1 - (- self.y_min) / self.len_y_axis)
 
         self.ignored_error = {}
-
+        
         print("system init")
 
     def get_x_axis_pos(self) -> list[tuple[float, float], tuple[float, float]]:
