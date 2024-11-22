@@ -228,7 +228,7 @@ class CoordinateSystem:
 
         self.graduation_coordinate = []
 
-        self.screen = pygame.Surface
+        self.screen = pygame.Surface(screen_size)
 
         self.len_x_axis = abs(self.x_max - self.x_min)
         self.len_y_axis = abs(self.y_max - self.y_min)
@@ -241,6 +241,13 @@ class CoordinateSystem:
         self.getting_points = bool
 
         self.zoom_mode = bool
+
+        self.zoom_x1 = float
+        self.zoom_x2 = float
+
+        self.zoom_y1 = float
+        self.zoom_y2 = float
+
         self.first_point = bool
         self.first_point_position = tuple
 
@@ -253,7 +260,7 @@ class CoordinateSystem:
 
         print("system init")
 
-    def get_axes_info(self):
+    def set_axes_info(self) -> None:
         self.len_x_axis = abs(self.x_max - self.x_min)
         self.len_y_axis = abs(self.y_max - self.y_min)
 
@@ -352,7 +359,7 @@ class CoordinateSystem:
 
         return graduations
 
-    def draw_graduations(self, x_graduation: list, y_graduation: list, graduation_color: tuple):
+    def draw_graduations(self, x_graduation: list, y_graduation: list, graduation_color: tuple) -> None:
         for i in x_graduation:
             x, y = i
             pygame.draw.line(self.screen, graduation_color, (x, y - 5), (x, y + 5))
@@ -370,7 +377,7 @@ class CoordinateSystem:
                 text_surface = font.render(str(round(text, 2)), True, graduation_color)
                 text_rect = text_surface.get_rect(center=coordinate)
 
-                self.screen.blit(text_surface, text_rect)
+                self.screen.blit(source=text_surface, dest=text_rect)
 
     def get_curve_points(self, element) -> list:
         try:
@@ -394,7 +401,7 @@ class CoordinateSystem:
 
         return points
 
-    def draw_arrow(self, color, start_pos, end_pos, arrow_width=3, arrow_length=7):
+    def draw_arrow(self, color, start_pos, end_pos, arrow_width=3, arrow_length=7) -> None:
 
         angle = math.atan2(end_pos[1] - start_pos[1], end_pos[0] - start_pos[0])
 
@@ -422,7 +429,7 @@ class CoordinateSystem:
                 pygame.draw.line(self.screen, points_color, point_position, points[index_counter + 1], 3)
                 index_counter += 1
 
-    def get_mouse_coordinate(self) -> tuple[pygame.Surface, pygame.Rect]:
+    def get_text_mouse_coordinate(self) -> tuple[pygame.Surface, pygame.Rect]:
         mouse_coordinate = self.get_coordinate_from_position(self.mouse_pos)
         mouse_coordinate = round(mouse_coordinate[0], 1), round(mouse_coordinate[1], 1)
 
@@ -501,15 +508,16 @@ class CoordinateSystem:
         if self.first_point:
             pygame.draw.circle(self.screen, (0, 0, 0), self.mouse_pos, 3)
         else:
-            x1, y1 = self.first_point_position
-            x2, y2 = self.mouse_pos
+            # Stocker les positions brutes dans des attributs
+            self.zoom_x1, self.zoom_y1 = self.first_point_position
+            self.zoom_x2, self.zoom_y2 = self.mouse_pos
 
-            if x2 < x1:
-                x1, x2 = x2, x1
-            if y2 < y1:
-                y1, y2 = y2, y1
+            if self.zoom_x2 < self.zoom_x1:
+                self.zoom_x1, self.zoom_x2 = self.zoom_x2, self.zoom_x1
+            if self.zoom_y2 < self.zoom_y1:
+                self.zoom_y1, self.zoom_y2 = self.zoom_y2, self.zoom_y1
 
-            rect = (x1, y1, abs(x2 - x1), abs(y2 - y1))
+            rect = (self.zoom_x1, self.zoom_y1, self.zoom_x2 - self.zoom_x1, self.zoom_y2 - self.zoom_y1)
 
             pygame.draw.rect(self.screen, (0, 0, 0), rect, 2)
 
@@ -531,12 +539,12 @@ class CoordinateSystem:
         pygame.init()
 
         self.screen = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
+
         pygame.display.set_caption(win_title)
         running = True
 
         self.zoom_mode = False
         self.first_point = True
-
         self.getting_points = True
 
         while running:
@@ -557,8 +565,9 @@ class CoordinateSystem:
                             self.first_point_position = self.mouse_pos
 
                         else:
-                            x_min, y_max = self.get_coordinate_from_position(self.first_point_position)
-                            x_max, y_min = self.get_coordinate_from_position(self.mouse_pos)
+                            x_min, y_max = self.get_coordinate_from_position((self.zoom_x1, self.zoom_y1))
+                            x_max, y_min = self.get_coordinate_from_position((self.zoom_x2, self.zoom_y2))
+
                             self.zoom(x_min, x_max, y_min, y_max)
                             self.first_point = True
 
@@ -566,7 +575,7 @@ class CoordinateSystem:
                 self.draw_zoom_rect()
 
             if self.getting_points:
-                self.get_axes_info()
+                self.set_axes_info()
 
                 self.get_graduation_and_points(show_x_graduation_coordinate, show_y_graduation_coordinate)
 
@@ -576,7 +585,7 @@ class CoordinateSystem:
                 self.getting_points = False
 
             if show_coordinate:
-                text = self.get_mouse_coordinate()
+                text = self.get_text_mouse_coordinate()
                 self.screen.blit(text[0], text[1])
 
             self.move(x_step_movement, y_step_movement)
