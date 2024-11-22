@@ -279,12 +279,14 @@ class CoordinateSystem:
 
         return [start_pos, end_pos]
 
-    def draw_axes(self, axes_color: tuple):
-        x_axis_pos = self.get_x_axis_position()
-        y_axis_pos = self.get_y_axis_position()
+    def draw_axes(self, axes_color: tuple, show_x_axis: bool, show_y_axis: bool) -> None:
+        if show_x_axis:
+            x_axis_pos = self.get_x_axis_position()
+            pygame.draw.line(self.screen, axes_color, x_axis_pos[0], x_axis_pos[1])
+        if show_y_axis:
+            y_axis_pos = self.get_y_axis_position()
+            pygame.draw.line(self.screen, axes_color, y_axis_pos[0], y_axis_pos[1])
 
-        pygame.draw.line(self.screen, axes_color, y_axis_pos[0], y_axis_pos[1])
-        pygame.draw.line(self.screen, axes_color, x_axis_pos[0], x_axis_pos[1])
 
     def get_position_from_coordinate(self,
                                      coordinate: tuple) -> tuple:  # position = pixel | coordinate = x_min < coordinate < x_max
@@ -526,8 +528,8 @@ class CoordinateSystem:
 
     def show(self, background_color: tuple = (255, 255, 255), points_color_list: list = None,
              axes_color: tuple = (0, 0, 0),
-             graduation_color: tuple = (0, 0, 0), show_x_graduation_coordinate: bool = False,
-             show_y_graduation_coordinate: bool = False, show_coordinate: bool = False, win_title: str = "",
+             graduation_color: tuple = (0, 0, 0), show_x_axis: bool = True, show_x_graduation_coordinate: bool = False,
+             show_y_axis: bool = True, show_y_graduation_coordinate: bool = False, show_coordinate: bool = False, win_title: str = "",
              show_ignored_error: bool = False, x_step_movement: float = 0.5, y_step_movement: float = 0.5):
 
         if points_color_list is None:
@@ -590,7 +592,7 @@ class CoordinateSystem:
 
             self.move(x_step_movement, y_step_movement)
 
-            self.draw_axes(axes_color)
+            self.draw_axes(axes_color, show_x_axis, show_y_axis)
             self.draw_graduations(self.x_grad, self.y_grad, graduation_color)
 
             for color_index, (element, points) in enumerate(self.curves_points):
