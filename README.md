@@ -135,4 +135,5 @@ if __name__ == '__main__':
 ### result :
 ![VectorVisualisation](https://github.com/crocroque/CoordinateSystem/blob/main/images/VectorVisualisation.png)
 
-
+## Zoom
+Press right click (a point at your mouse position will appear) then click where do you want your zoom to start and click where you want your zoom to end. 
