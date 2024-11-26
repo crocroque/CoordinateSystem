@@ -473,29 +473,29 @@ class CoordinateSystem:
     def move(self, x_velocity: float, y_velocity: float):
 
         key = pygame.key.get_pressed()
+        if pygame.time.get_ticks() % 10 == 0:
+            if key[pygame.K_RIGHT]:
+                self.x_max += x_velocity
+                self.x_min += x_velocity
+                self.getting_points = True
 
-        if key[pygame.K_RIGHT]:
-            self.x_max += x_velocity
-            self.x_min += x_velocity
-            self.getting_points = True
+            if key[pygame.K_LEFT]:
+                self.x_min -= x_velocity
+                self.x_max -= x_velocity
+                self.getting_points = True
 
-        if key[pygame.K_LEFT]:
-            self.x_min -= x_velocity
-            self.x_max -= x_velocity
-            self.getting_points = True
+            if key[pygame.K_UP]:
+                self.y_min += y_velocity
+                self.y_max += y_velocity
+                self.getting_points = True
 
-        if key[pygame.K_UP]:
-            self.y_min += y_velocity
-            self.y_max += y_velocity
-            self.getting_points = True
+            if key[pygame.K_DOWN]:
+                self.y_min -= y_velocity
+                self.y_max -= y_velocity
+                self.getting_points = True
 
-        if key[pygame.K_DOWN]:
-            self.y_min -= y_velocity
-            self.y_max -= y_velocity
-            self.getting_points = True
-
-        if key[pygame.K_r]:
-            self.initial_xy()
+            if key[pygame.K_r]:
+                self.initial_xy()
 
     def zoom(self, x_min, x_max, y_min, y_max):
         self.x_min, self.x_max = x_min, x_max
@@ -542,6 +542,7 @@ class CoordinateSystem:
 
         self.screen = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
 
+
         pygame.display.set_caption(win_title)
         running = True
 
@@ -550,13 +551,14 @@ class CoordinateSystem:
         self.getting_points = True
 
         while running:
-            self.screen.fill(background_color)
-            self.mouse_pos = pygame.mouse.get_pos()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
 
-                elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3: # right click
+                if event.type == pygame.KEYUP and event.key == pygame.K_s:
+                    self.screenshot()
+
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 3: # right click
                     self.zoom_mode = not self.zoom_mode
                     self.first_point = True
 
@@ -572,6 +574,9 @@ class CoordinateSystem:
 
                             self.zoom(x_min, x_max, y_min, y_max)
                             self.first_point = True
+
+            self.screen.fill(background_color)
+            self.mouse_pos = pygame.mouse.get_pos()
 
             if self.zoom_mode:
                 self.draw_zoom_rect()
@@ -602,5 +607,8 @@ class CoordinateSystem:
 
         pygame.quit()
 
-    def __repr__(self):
+    def screenshot(self, filename: str = "screenshot.png") -> None:
+        pygame.image.save(self.screen, filename)
+
+    def __repr__(self) -> str:
         return f"CoordinateSystem(graph_elements: {self.graph_elements}, x_min={self.x_min}, x_max={self.x_max}, y_min={self.y_min}, y_max={self.y_max})"
