@@ -138,3 +138,6 @@ if __name__ == '__main__':
 ## Zoom
 Press right click (a point at your mouse position will appear) then click where do you want your zoom to start and click where you want your zoom to end. 
 to return to the initial zoom press "r"
+
+## Screenshot
+Press "s" for take a screenshot of the screen
