@@ -140,4 +140,4 @@ Press right click (a point at your mouse position will appear) then click where 
 to return to the initial zoom press "r"
 
 ## Screenshot
-Press "s" for take a screenshot of the screen
+Press "s" for take a screenshot of the screen who will be saved as "screenshot.png"
