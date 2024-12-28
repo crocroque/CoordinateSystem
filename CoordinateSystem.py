@@ -27,7 +27,6 @@ class Function(Element):
         self.expression_name = expression.__name__
         
     def get_images(self, start: int, stop: int, step: float, errors_dict: dict = None) -> dict[int: float]:
-        print(self.draw_lines_between_points)
         images = {}
         x = start
         errors_dict.setdefault(self.expression_name, [])
