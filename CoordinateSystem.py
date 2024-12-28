@@ -3,15 +3,12 @@ import pygame
 import math
 
 
-class Function:
-    def __init__(self, expression, trace_step: float = 0.1, draw_points: bool = False,
-                 draw_lines_between_points: bool = True):
-        self.expression = expression
-        self.expression_name = expression.__name__
+class Element:
+    def __init__(self, trace_step, draw_points, draw_lines_between_points):
         self.trace_step = trace_step
         self.draw_points = draw_points
         self.draw_lines_between_points = draw_lines_between_points
-
+        
         if trace_step < 0:
             raise ValueError("trace_step must be >= 0")
 
@@ -21,7 +18,16 @@ class Function:
         if type(draw_lines_between_points) is not bool:
             raise TypeError(f"draw_lines_between_points must be True or False not {type(draw_lines_between_points)}")
 
+
+class Function(Element):
+    def __init__(self, expression, trace_step: float = 0.1, draw_points: bool = False, draw_lines_between_points: bool = True):
+        super().__init__(trace_step=trace_step, draw_points=draw_points, draw_lines_between_points=draw_lines_between_points)
+
+        self.expression = expression
+        self.expression_name = expression.__name__
+        
     def get_images(self, start: int, stop: int, step: float, errors_dict: dict = None) -> dict[int: float]:
+        print(self.draw_lines_between_points)
         images = {}
         x = start
         errors_dict.setdefault(self.expression_name, [])
@@ -49,31 +55,21 @@ class Function:
         return f"Function(expression_name={self.expression_name})"
 
 
-class Sequence:
+class Sequence(Element):
     def __init__(self, formula, n_min: int = 0, trace_step: int = 1, draw_points: bool = True,
                  draw_lines_between_points: bool = False):
+
+        super().__init__(trace_step=trace_step, draw_points=draw_points, draw_lines_between_points=draw_lines_between_points)
 
         self.formula = formula
         self.formula_name = formula.__name__
 
-        self.trace_step = trace_step
-        self.draw_points = draw_points
-        self.draw_lines_between_points = draw_lines_between_points
         self.n_min = n_min
         if n_min < 0:
             raise ValueError("n_min must be >= 0")
 
         if type(trace_step) is not int:
             raise TypeError(f"trace_step must be int for Sequence (not {type(trace_step)})")
-
-        if trace_step < 0:
-            raise ValueError("trace_step must be >= 0")
-
-        if type(draw_points) is not bool:
-            raise TypeError(f"draw_points must be True or False not {type(draw_points)}")
-
-        if type(draw_lines_between_points) is not bool:
-            raise TypeError(f"draw_lines_between_points must be True or False not {type(draw_lines_between_points)}")
 
     def get_terms(self, start: int, stop: int, step: int, errors_dict: dict = None) -> dict[int: float]:
         terms = {}
@@ -111,20 +107,15 @@ class Sequence:
         return f"Sequence(formula_name={self.formula_name})"
 
 
-class Vector:
+class Vector(Element):
     def __init__(self, coordinate: tuple, start_coordinate: tuple = (0, 0), draw_arrow: bool = True,
                  draw_points: bool = False, draw_lines_between_points: bool = False):
+        super().__init__(draw_points=draw_points, draw_lines_between_points=draw_lines_between_points, trace_step=0)
 
         if type(draw_arrow) is not bool:
             raise TypeError(f"draw_arrow must be True or False not {type(draw_arrow)}")
-        if type(draw_points) is not bool:
-            raise TypeError(f"draw_points must be True or False not {type(draw_points)}")
-        if type(draw_lines_between_points) is not bool:
-            raise TypeError(f"draw_lines_between_points must be True or False not {type(draw_lines_between_points)}")
 
         self.draw_arrow = draw_arrow
-        self.draw_points = draw_points
-        self.draw_lines_between_points = draw_lines_between_points
 
         self.x, self.y = coordinate
 
@@ -132,6 +123,9 @@ class Vector:
         self.end_coordinate = coordinate
 
     def get_points(self):
+        if self.x == 0:
+            self.x = 0.000000000000001
+
         points = {self.start_coordinate[0]: self.start_coordinate[1],
                   self.start_coordinate[0] + self.x: self.start_coordinate[1] + self.y}
 
@@ -181,6 +175,24 @@ class Vector:
         return f"Vector(x={self.x} ; y={self.y}) starting at (x={self.start_coordinate[0]} ; y={self.start_coordinate[1]})"
 
 
+class Landmark(Element):
+    def __init__(self, coordinate: tuple):
+        super().__init__(draw_points=True, draw_lines_between_points=False, trace_step=0.1)
+
+        if not isinstance(coordinate, (tuple, list)):
+            raise TypeError(f"coordinate must be tuple or list not {type(coordinate)}")
+
+        self.coordinate = coordinate
+        self.x = coordinate[0]
+        self.y = coordinate[1]
+
+    def get_mark_coordinate(self):
+        return {self.x: self.y}
+
+    def __repr__(self):
+        return f'Landmark(x={self.x} ; y={self.y})'
+
+
 class FunctionEvaluatingError(Exception):
     def __init__(self, error):
         self.message = f"Error while evaluating the function : \n {error}"
@@ -211,8 +223,8 @@ class CoordinateSystem:
             raise ValueError("screen dimensions must be non-negative")
 
         for element in graph_elements:
-            if not isinstance(element, (Function, Vector, Sequence)):
-                raise TypeError(f"element in graph_elements must be Function, Vector or Sequence, not {type(element)}")
+            if not isinstance(element, (Function, Vector, Sequence, Landmark)):
+                raise TypeError(f"element in graph_elements must be Function, Vector, Sequence or Landmark. Not {type(element)}")
 
         self.graph_elements = graph_elements
 
@@ -391,6 +403,9 @@ class CoordinateSystem:
                                                       errors_dict=self.ignored_error)
             elif type(element) is Vector:
                 points_coordinate = element.get_points()
+
+            elif type(element) is Landmark:
+                points_coordinate = element.get_mark_coordinate()
 
         except Exception as e:
             pygame.quit()
@@ -601,7 +616,10 @@ class CoordinateSystem:
             self.draw_graduations(self.x_grad, self.y_grad, graduation_color)
 
             for color_index, (element, points) in enumerate(self.curves_points):
-                self.draw_curve(points=points, points_color=points_color_list[color_index], element=element)
+                color = (0, 0, 0)
+                if len(points_color_list)-1 > color_index:
+                    color = points_color_list[color_index]
+                self.draw_curve(points=points, points_color=color, element=element)
 
             pygame.display.update()
 
