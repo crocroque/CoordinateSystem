@@ -1,22 +1,4 @@
 # CoordinateSystem
-## Optionnal Parameters of CoordinateSystem.show()
-
-| Parameter Name                | Type         | Default Value            | Description                                                                                                                        |
-|-------------------------------|--------------|--------------------------|------------------------------------------------------------------------------------------------------------------------------------|
-| `background_color`            | `tuple`      | `(255, 255, 255)`        | The background color, specified as an RGB tuple.                                                                                   |
-| `points_color_list`           | `list`       | `None`                   | A list of colors for the points. Each element corresponds to a color for points of a graph_element (8 default color)               |
-| `axes_color`                  | `tuple`      | `(0, 0, 0)`              | The color of the axes, specified as an RGB tuple.                                                                                  |
-| `graduation_color`            | `tuple`      | `(0, 0, 0)`              | The color of the graduations on the axes, specified as an RGB tuple.                                                               |
-| `show_x_axis`                 | `bool`       | `True`                   | Whether to display the X-axis.                                                                                                     |
-| `show_x_graduation_coordinate`| `bool`       | `False`                  | Whether to display the graduation coordinates on the X-axis.                                                                       |
-| `show_y_axis`                 | `bool`       | `True`                   | Whether to display the Y-axis.                                                                                                     |
-| `show_y_graduation_coordinate`| `bool`       | `False`                  | Whether to display the graduation coordinates on the Y-axis.                                                                       |
-| `show_coordinate`             | `bool`       | `False`                  | Whether to display the coordinates of mouse in the visualization window.                                                           |
-| `win_title`                   | `str`        | `""`                     | The title of the visualization window.                                                                                             |
-| `show_ignored_error`          | `bool`       | `False`                  | Whether to display ignored errors during the calculation of points process.                                                        |
-| `x_step_movement`             | `float`      | `0.5`                    | The step size for movement along the X-axis (for navigation with the key arrow).                                                   |
-| `y_step_movement`             | `float`      | `0.5`                    | The step size for movement along the Y-axis (for navigation with the key arrow).                                                   |
-
 ## visualisation of one function by code :
 ```python
 from CoordinateSystem import CoordinateSystem, Function
@@ -134,6 +116,25 @@ if __name__ == '__main__':
 
 ### result :
 ![VectorVisualisation](https://github.com/crocroque/CoordinateSystem/blob/main/images/VectorVisualisation.png)
+
+## Optionnal Parameters of CoordinateSystem.show()
+
+| Parameter Name                | Type         | Default Value            | Description                                                                                                                        |
+|-------------------------------|--------------|--------------------------|------------------------------------------------------------------------------------------------------------------------------------|
+| `background_color`            | `tuple`      | `(255, 255, 255)`        | The background color, specified as an RGB tuple.                                                                                   |
+| `points_color_list`           | `list`       | `None`                   | A list of colors for the points. Each element corresponds to a color for points of a graph_element (8 default color)               |
+| `axes_color`                  | `tuple`      | `(0, 0, 0)`              | The color of the axes, specified as an RGB tuple.                                                                                  |
+| `graduation_color`            | `tuple`      | `(0, 0, 0)`              | The color of the graduations on the axes, specified as an RGB tuple.                                                               |
+| `show_x_axis`                 | `bool`       | `True`                   | Whether to display the X-axis.                                                                                                     |
+| `show_x_graduation_coordinate`| `bool`       | `False`                  | Whether to display the graduation coordinates on the X-axis.                                                                       |
+| `show_y_axis`                 | `bool`       | `True`                   | Whether to display the Y-axis.                                                                                                     |
+| `show_y_graduation_coordinate`| `bool`       | `False`                  | Whether to display the graduation coordinates on the Y-axis.                                                                       |
+| `show_coordinate`             | `bool`       | `False`                  | Whether to display the coordinates of mouse in the visualization window.                                                           |
+| `win_title`                   | `str`        | `""`                     | The title of the visualization window.                                                                                             |
+| `show_ignored_error`          | `bool`       | `False`                  | Whether to display ignored errors during the calculation of points process.                                                        |
+| `x_step_movement`             | `float`      | `0.5`                    | The step size for movement along the X-axis (for navigation with the key arrow).                                                   |
+| `y_step_movement`             | `float`      | `0.5`                    | The step size for movement along the Y-axis (for navigation with the key arrow).                                                   |
+
 
 ## Zoom
 Press right click (a point at your mouse position will appear) then click where do you want your zoom to start and click where you want your zoom to end. 
