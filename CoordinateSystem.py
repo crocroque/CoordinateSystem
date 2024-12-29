@@ -175,21 +175,31 @@ class Vector(Element):
 
 
 class Landmark(Element):
-    def __init__(self, coordinate: tuple):
-        super().__init__(draw_points=True, draw_lines_between_points=False, trace_step=0.1)
+    def __init__(self, coordinate: tuple, text: str = None, placement: str = "bottomright"):
+        super().__init__(draw_points=True, draw_lines_between_points=False, trace_step=1)
 
         if not isinstance(coordinate, (tuple, list)):
             raise TypeError(f"coordinate must be tuple or list not {type(coordinate)}")
 
+        if not isinstance(text, (str, type(None))) :
+            raise TypeError(f"text must be str or None not {type(text)}")
+
+
+        possible_placement = ['topleft', 'midtop', 'midbottom', 'bottomright', 'topright', 'bottomleft']
+        if placement not in possible_placement:
+            raise ValueError(f"placement must be 'topleft', 'midtop', 'midbottom', 'bottomright', 'topright' or 'bottomleft' not {placement}")
+
         self.coordinate = coordinate
         self.x = coordinate[0]
         self.y = coordinate[1]
+        self.text = text
+        self.placement = placement
 
     def get_mark_coordinate(self):
         return {self.x: self.y}
 
     def __repr__(self):
-        return f'Landmark(x={self.x} ; y={self.y})'
+        return f"Landmark(x={self.x} ; y={self.y} ; text='{self.text}' ; placement='{self.placement}')"
 
 
 class FunctionEvaluatingError(Exception):
@@ -299,8 +309,7 @@ class CoordinateSystem:
             pygame.draw.line(self.screen, axes_color, y_axis_pos[0], y_axis_pos[1])
 
 
-    def get_position_from_coordinate(self,
-                                     coordinate: tuple) -> tuple:  # position = pixel | coordinate = x_min < coordinate < x_max
+    def get_position_from_coordinate(self, coordinate: tuple) -> tuple:  # position = pixel | coordinate = x_min < coordinate < x_max
         x_coordinate, y_coordinate = coordinate
 
         x_position = (x_coordinate - self.x_min) / (self.x_max - self.x_min) * self.width
@@ -439,21 +448,34 @@ class CoordinateSystem:
 
             if element.draw_points:
                 x, y = point_position
-                pygame.draw.circle(self.screen, points_color, (x, y), 2)
+                point = pygame.draw.circle(self.screen, points_color, (x, y), 2)
 
             if element.draw_lines_between_points and index_counter < len(points) - 1:
                 pygame.draw.line(self.screen, points_color, point_position, points[index_counter + 1], 3)
                 index_counter += 1
 
-    def get_text_mouse_coordinate(self) -> tuple[pygame.Surface, pygame.Rect]:
-        mouse_coordinate = self.get_coordinate_from_position(self.mouse_pos)
-        mouse_coordinate = round(mouse_coordinate[0], 1), round(mouse_coordinate[1], 1)
+            if type(element) is Landmark and type(element.text) is not None:
+                self.draw_landmark_text(text=element.text, text_placement=element.placement, point=point)
 
+    def draw_text(self, text_position, text: str) -> None: # if centered is false text_position must be str else tuple
         font = pygame.font.Font(None, 20)
-        text_surface = font.render(str(mouse_coordinate), True, (0, 0, 0))
-        text_rect = text_surface.get_rect(center=(self.width - 40, 10))
+        text_surface = font.render(text, True, (0, 0, 0))
+        text_rect = text_surface.get_rect(center=text_position)
 
-        return text_surface, text_rect
+        self.screen.blit(text_surface, text_rect)
+
+    def draw_landmark_text(self, text: str, text_placement, point):
+        font = pygame.font.Font(None, 20)
+        text_surface = font.render(text, True, (0, 0, 0))
+
+        placement = {"bottomright" : "topleft", "midbottom": "midtop", "midtop": "midbottom", "topleft" : "bottomright", "bottomleft": "topright", "topright": "bottomleft"}
+        text_rect = 0
+        for item in placement.items():
+            if text_placement in item[1]:
+                param = {item[0]: point.__getattribute__(text_placement)}
+                text_rect = text_surface.get_rect(**param)
+
+        self.screen.blit(text_surface, text_rect)
 
     def show_ignored_errors(self):
         list_error = ""
@@ -566,7 +588,7 @@ class CoordinateSystem:
 
         while running:
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
+                if event.type == pygame.QUIT or (event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE):
                     running = False
 
                 if event.type == pygame.KEYUP and event.key == pygame.K_s:
@@ -606,8 +628,10 @@ class CoordinateSystem:
                 self.getting_points = False
 
             if show_coordinate:
-                text = self.get_text_mouse_coordinate()
-                self.screen.blit(text[0], text[1])
+                mouse_coordinate = self.get_coordinate_from_position(self.mouse_pos)
+                mouse_coordinate = round(mouse_coordinate[0], 1), round(mouse_coordinate[1], 1)
+
+                self.draw_text(text=str(mouse_coordinate), text_position=(self.width - 40, 10))
 
             self.move(x_step_movement, y_step_movement)
 
@@ -616,7 +640,7 @@ class CoordinateSystem:
 
             for color_index, (element, points) in enumerate(self.curves_points):
                 color = (0, 0, 0)
-                if len(points_color_list)-1 > color_index:
+                if len(points_color_list) > color_index:
                     color = points_color_list[color_index]
                 self.draw_curve(points=points, points_color=color, element=element)
 
