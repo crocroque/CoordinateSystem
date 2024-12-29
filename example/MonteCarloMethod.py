@@ -60,19 +60,21 @@ def pi_by_montecarlo_method(len_points_in_circle: int, len_points: int) -> float
     return 4 * (len_points_in_circle/len_points)
 
 
-nbr_points = 30000
+nbr_points = 2
 random_points = get_random_points(nbr_points)
 points_in_circle = get_points_in_circle(random_points)
 approximated_pi = pi_by_montecarlo_method(len_points_in_circle=points_in_circle, len_points=len(random_points))
 print(approximated_pi)
 
-circle = Function(quarter_circle, trace_step=0.00001)
-square_delimiter = Vector((0, 1), (1, 0), False, draw_lines_between_points=True)
-square_delimiter2 = Vector((1, 0), (0, 1), False, draw_lines_between_points=True)
+circle = Function(quarter_circle, trace_step=0.001)
+square_delimiter = Vector((0, 1), (1, 0), draw_arrow=False, draw_lines_between_points=True)
+square_delimiter2 = Vector((1, 0), (0, 1), draw_arrow=False, draw_lines_between_points=True)
 
 system = CoordinateSystem([*random_points, square_delimiter, square_delimiter2, circle], (700, 700), -0.1, 1.1, 1, -0.1, 1.1, 1)
 points_color = []
 for i in range(nbr_points):
-    points_color = [[0, 0, 0]] + points_color
+    points_color.append([0, 0, 0])
 
-system.show(show_x_graduation_coordinate=True, show_y_graduation_coordinate=True, points_color_list=points_color + [[255, 0, 0], [0, 255, 0], [0, 0, 255]])
+points_color += [[255, 0, 0], [0, 255, 0], [0, 0, 255]]
+
+system.show(show_x_graduation_coordinate=True, show_y_graduation_coordinate=True, points_color_list=points_color)
