@@ -1,4 +1,3 @@
-from tkinter import Tk, messagebox
 import pygame
 import math
 
@@ -8,7 +7,7 @@ class Element:
         self.trace_step = trace_step
         self.draw_points = draw_points
         self.draw_lines_between_points = draw_lines_between_points
-        
+
         if trace_step < 0:
             raise ValueError("trace_step must be >= 0")
 
@@ -20,12 +19,14 @@ class Element:
 
 
 class Function(Element):
-    def __init__(self, expression, trace_step: float = 0.1, draw_points: bool = False, draw_lines_between_points: bool = True):
-        super().__init__(trace_step=trace_step, draw_points=draw_points, draw_lines_between_points=draw_lines_between_points)
+    def __init__(self, expression, trace_step: float = 0.1, draw_points: bool = False,
+                 draw_lines_between_points: bool = True):
+        super().__init__(trace_step=trace_step, draw_points=draw_points,
+                         draw_lines_between_points=draw_lines_between_points)
 
         self.expression = expression
         self.expression_name = expression.__name__
-        
+
     def get_images(self, start: int, stop: int, step: float, errors_dict: dict = None) -> dict[int: float]:
         images = {}
         x = start
@@ -49,7 +50,6 @@ class Function(Element):
 
         return images
 
-
     def __repr__(self):
         return f"Function(expression_name={self.expression_name})"
 
@@ -58,7 +58,8 @@ class Sequence(Element):
     def __init__(self, formula, n_min: int = 0, trace_step: int = 1, draw_points: bool = True,
                  draw_lines_between_points: bool = False):
 
-        super().__init__(trace_step=trace_step, draw_points=draw_points, draw_lines_between_points=draw_lines_between_points)
+        super().__init__(trace_step=trace_step, draw_points=draw_points,
+                         draw_lines_between_points=draw_lines_between_points)
 
         self.formula = formula
         self.formula_name = formula.__name__
@@ -100,7 +101,6 @@ class Sequence(Element):
                     errors_dict[f"{self.formula_name}"].append(str(e))
 
         return terms
-
 
     def __repr__(self):
         return f"Sequence(formula_name={self.formula_name})"
@@ -175,25 +175,33 @@ class Vector(Element):
 
 
 class Landmark(Element):
-    def __init__(self, coordinate: tuple, text: str = None, placement: str = "bottomright"):
+    def __init__(self, coordinate: tuple, text: str = None, text_color: tuple = (0,0,0), text_placement: str = "bottomright"):
         super().__init__(draw_points=True, draw_lines_between_points=False, trace_step=1)
 
         if not isinstance(coordinate, (tuple, list)):
             raise TypeError(f"coordinate must be tuple or list not {type(coordinate)}")
 
-        if not isinstance(text, (str, type(None))) :
+        if not isinstance(text, (str, type(None))):
             raise TypeError(f"text must be str or None not {type(text)}")
 
+        if not isinstance(text_color, (tuple, list)):
+            raise TypeError(f"text_color must be tuple or list not {type(text_color)}")
 
-        possible_placement = ['topleft', 'midtop', 'midbottom', 'bottomright', 'topright', 'bottomleft']
-        if placement not in possible_placement:
-            raise ValueError(f"placement must be 'topleft', 'midtop', 'midbottom', 'bottomright', 'topright' or 'bottomleft' not {placement}")
+        possible_placement = {"bottomright": "topleft", "midbottom": "midtop", "midtop": "midbottom", "topleft": "bottomright","bottomleft": "topright", "topright": "bottomleft"}
+        if text_placement not in possible_placement.keys():
+            raise ValueError(
+                f"placement must be 'topleft', 'midtop', 'midbottom', 'bottomright', 'topright' or 'bottomleft' not {text_placement}")
+
+        for item in possible_placement.items():
+            if text_placement == item[1]:
+                self.rect_placement = item[0]
 
         self.coordinate = coordinate
         self.x = coordinate[0]
         self.y = coordinate[1]
         self.text = text
-        self.placement = placement
+        self.text_color = text_color
+        self.placement = text_placement
 
     def get_mark_coordinate(self):
         return {self.x: self.y}
@@ -233,7 +241,8 @@ class CoordinateSystem:
 
         for element in graph_elements:
             if not isinstance(element, (Function, Vector, Sequence, Landmark)):
-                raise TypeError(f"element in graph_elements must be Function, Vector, Sequence or Landmark. Not {type(element)}")
+                raise TypeError(
+                    f"element in graph_elements must be Function, Vector, Sequence or Landmark. Not {type(element)}")
 
         self.graph_elements = graph_elements
 
@@ -279,6 +288,9 @@ class CoordinateSystem:
 
         self.mouse_pos = tuple
 
+        pygame.font.init()
+        self.font = pygame.font.Font(None, 20)
+
         print("system init")
 
     def set_axes_info(self) -> None:
@@ -308,8 +320,8 @@ class CoordinateSystem:
             y_axis_pos = self.get_y_axis_position()
             pygame.draw.line(self.screen, axes_color, y_axis_pos[0], y_axis_pos[1])
 
-
-    def get_position_from_coordinate(self, coordinate: tuple) -> tuple:  # position = pixel | coordinate = x_min < coordinate < x_max
+    def get_position_from_coordinate(self,
+                                     coordinate: tuple) -> tuple:  # position = pixel | coordinate = x_min < coordinate < x_max
         x_coordinate, y_coordinate = coordinate
 
         x_position = (x_coordinate - self.x_min) / (self.x_max - self.x_min) * self.width
@@ -455,29 +467,25 @@ class CoordinateSystem:
                 index_counter += 1
 
             if type(element) is Landmark and type(element.text) is not None:
-                self.draw_landmark_text(text=element.text, text_placement=element.placement, point=point)
+                self.draw_landmark_text(landmark=element, point=point)
 
-    def draw_text(self, text_position, text: str) -> None: # if centered is false text_position must be str else tuple
-        font = pygame.font.Font(None, 20)
-        text_surface = font.render(text, True, (0, 0, 0))
+    def draw_text(self, text_position, text: str) -> None:
+        text_surface = self.font.render(text, True, (0, 0, 0))
         text_rect = text_surface.get_rect(center=text_position)
 
         self.screen.blit(text_surface, text_rect)
 
-    def draw_landmark_text(self, text: str, text_placement, point):
-        font = pygame.font.Font(None, 20)
-        text_surface = font.render(text, True, (0, 0, 0))
+    def draw_landmark_text(self, landmark: Landmark, point: pygame.Rect) -> None:
+        text_surface = self.font.render(landmark.text, True, landmark.text_color)
 
-        placement = {"bottomright" : "topleft", "midbottom": "midtop", "midtop": "midbottom", "topleft" : "bottomright", "bottomleft": "topright", "topright": "bottomleft"}
-        text_rect = 0
-        for item in placement.items():
-            if text_placement in item[1]:
-                param = {item[0]: point.__getattribute__(text_placement)}
-                text_rect = text_surface.get_rect(**param)
+        param = {landmark.rect_placement: point.__getattribute__(landmark.placement)}
+        text_rect = text_surface.get_rect(**param)
 
         self.screen.blit(text_surface, text_rect)
 
-    def show_ignored_errors(self):
+    def show_ignored_errors(self) -> None:
+        from tkinter import Tk, messagebox
+
         list_error = ""
         for error in self.ignored_error.items():
             list_error += f"- element {error[0]} : \n"
@@ -502,9 +510,9 @@ class CoordinateSystem:
 
         self.curves_points = []
         for element in self.graph_elements:
-
+            if type(element) == Landmark and not self.x_min <= element.x <= self.x_max:
+                continue
             self.curves_points.append([element, self.get_curve_points(element=element)])
-
 
     def move(self, x_velocity: float, y_velocity: float):
 
@@ -541,7 +549,6 @@ class CoordinateSystem:
         self.zoom_mode = False
         self.getting_points = True
 
-
     def draw_zoom_rect(self):
         if self.first_point:
             pygame.draw.circle(self.screen, (0, 0, 0), self.mouse_pos, 3)
@@ -565,7 +572,8 @@ class CoordinateSystem:
     def show(self, background_color: tuple = (255, 255, 255), points_color_list: list = None,
              axes_color: tuple = (0, 0, 0),
              graduation_color: tuple = (0, 0, 0), show_x_axis: bool = True, show_x_graduation_coordinate: bool = False,
-             show_y_axis: bool = True, show_y_graduation_coordinate: bool = False, show_coordinate: bool = False, win_title: str = "",
+             show_y_axis: bool = True, show_y_graduation_coordinate: bool = False, show_coordinate: bool = False,
+             win_title: str = "",
              show_ignored_error: bool = False, x_step_movement: float = 0.5, y_step_movement: float = 0.5):
 
         if points_color_list is None:
@@ -577,7 +585,6 @@ class CoordinateSystem:
         pygame.init()
 
         self.screen = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
-
 
         pygame.display.set_caption(win_title)
         running = True
@@ -594,12 +601,12 @@ class CoordinateSystem:
                 if event.type == pygame.KEYUP and event.key == pygame.K_s:
                     self.screenshot()
 
-                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 3: # right click
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 3:  # right click
                     self.zoom_mode = not self.zoom_mode
                     self.first_point = True
 
                 if self.zoom_mode:
-                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1: # left click
+                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # left click
                         if self.first_point:
                             self.first_point = False
                             self.first_point_position = self.mouse_pos
