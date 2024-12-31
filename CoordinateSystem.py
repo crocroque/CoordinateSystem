@@ -574,7 +574,7 @@ class CoordinateSystem:
              axes_color: tuple = (0, 0, 0),
              graduation_color: tuple = (0, 0, 0), show_x_axis: bool = True, show_x_graduation_coordinate: bool = False,
              show_y_axis: bool = True, show_y_graduation_coordinate: bool = False, show_coordinate: bool = False,
-             win_title: str = "",
+             win_title: str = "", win_icon_path: str = None,
              show_ignored_error: bool = False, x_step_movement: float = 0.5, y_step_movement: float = 0.5):
 
         if points_color_list is None:
@@ -582,6 +582,11 @@ class CoordinateSystem:
                                  (0, 255, 0), (255, 192, 203), (255, 165, 0),
                                  (139, 69, 19), (0, 255, 255)
                                  ]
+
+        if win_icon_path is not None:
+            icon = pygame.image.load(win_icon_path)
+            pygame.display.set_icon(icon)
+
 
         pygame.init()
 
@@ -663,4 +668,3 @@ class CoordinateSystem:
 
     def __repr__(self) -> str:
         return f"CoordinateSystem(graph_elements: {self.graph_elements}, x_min={self.x_min}, x_max={self.x_max}, y_min={self.y_min}, y_max={self.y_max})"
-    
