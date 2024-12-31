@@ -131,6 +131,7 @@ if __name__ == '__main__':
 | `show_y_graduation_coordinate`| `bool`       | `False`                  | Whether to display the graduation coordinates on the Y-axis.                                                                       |
 | `show_coordinate`             | `bool`       | `False`                  | Whether to display the coordinates of mouse in the visualization window.                                                           |
 | `win_title`                   | `str`        | `""`                     | The title of the visualization window.                                                                                             |
+| `win_icon_path`               | `str`        | `None`                   | Icon of the visualization window must be an .png or .ico image                                                                     |
 | `show_ignored_error`          | `bool`       | `False`                  | Whether to display ignored errors during the calculation of points process.                                                        |
 | `x_step_movement`             | `float`      | `0.5`                    | The step size for movement along the X-axis (for navigation with the key arrow).                                                   |
 | `y_step_movement`             | `float`      | `0.5`                    | The step size for movement along the Y-axis (for navigation with the key arrow).                                                   |
