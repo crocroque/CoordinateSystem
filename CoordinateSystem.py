@@ -175,7 +175,7 @@ class Vector(Element):
 
 
 class Landmark(Element):
-    def __init__(self, coordinate: tuple, text: str = None, text_color: tuple = (0,0,0), text_placement: str = "bottomright"):
+    def __init__(self, coordinate: tuple, text: str = None, text_color: tuple = (0, 0, 0), text_placement: str = "bottomright"):
         super().__init__(draw_points=True, draw_lines_between_points=False, trace_step=1)
 
         if not isinstance(coordinate, (tuple, list)):
@@ -187,7 +187,7 @@ class Landmark(Element):
         if not isinstance(text_color, (tuple, list)):
             raise TypeError(f"text_color must be tuple or list not {type(text_color)}")
 
-        possible_placement = {"bottomright": "topleft", "midbottom": "midtop", "midtop": "midbottom", "topleft": "bottomright","bottomleft": "topright", "topright": "bottomleft"}
+        possible_placement = {"bottomright": "topleft", "midbottom": "midtop", "midtop": "midbottom", "topleft": "bottomright", "bottomleft": "topright", "topright": "bottomleft"}
         if text_placement not in possible_placement.keys():
             raise ValueError(
                 f"placement must be 'topleft', 'midtop', 'midbottom', 'bottomright', 'topright' or 'bottomleft' not {text_placement}")
@@ -287,6 +287,7 @@ class CoordinateSystem:
         self.y_grad = list
 
         self.mouse_pos = tuple
+        self.actual_cursor = int
 
         pygame.font.init()
         self.font = pygame.font.Font(None, 20)
@@ -550,10 +551,10 @@ class CoordinateSystem:
         self.getting_points = True
 
     def draw_zoom_rect(self):
+        self.actual_cursor = pygame.SYSTEM_CURSOR_CROSSHAIR
         if self.first_point:
             pygame.draw.circle(self.screen, (0, 0, 0), self.mouse_pos, 3)
         else:
-            # Stocker les positions brutes dans des attributs
             self.zoom_x1, self.zoom_y1 = self.first_point_position
             self.zoom_x2, self.zoom_y2 = self.mouse_pos
 
@@ -594,6 +595,7 @@ class CoordinateSystem:
         self.getting_points = True
 
         while running:
+            self.actual_cursor = pygame.SYSTEM_CURSOR_ARROW
             for event in pygame.event.get():
                 if event.type == pygame.QUIT or (event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE):
                     running = False
@@ -651,6 +653,7 @@ class CoordinateSystem:
                     color = points_color_list[color_index]
                 self.draw_curve(points=points, points_color=color, element=element)
 
+            pygame.mouse.set_cursor(pygame.cursors.Cursor(self.actual_cursor))
             pygame.display.update()
 
         pygame.quit()
@@ -660,3 +663,4 @@ class CoordinateSystem:
 
     def __repr__(self) -> str:
         return f"CoordinateSystem(graph_elements: {self.graph_elements}, x_min={self.x_min}, x_max={self.x_max}, y_min={self.y_min}, y_max={self.y_max})"
+    
