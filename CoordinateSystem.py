@@ -3,10 +3,11 @@ import math
 
 
 class Element:
-    def __init__(self, trace_step=0, draw_points=True, draw_lines_between_points=False):
+    def __init__(self, trace_step: float = 0.0, draw_points: bool = True, draw_lines_between_points: bool = False, swap_xy: bool = False):
         self.trace_step = trace_step
         self.draw_points = draw_points
         self.draw_lines_between_points = draw_lines_between_points
+        self.swap_xy = swap_xy
 
         if trace_step < 0:
             raise ValueError("trace_step must be >= 0")
@@ -17,18 +18,21 @@ class Element:
         if type(draw_lines_between_points) is not bool:
             raise TypeError(f"draw_lines_between_points must be True or False not {type(draw_lines_between_points)}")
 
+        if type(swap_xy) is not bool:
+            raise TypeError(f"swap_xy must be True or False not {type(swap_xy)}")
+
 
 class Function(Element):
     def __init__(self, expression, trace_step: float = 0.1, draw_points: bool = False,
-                 draw_lines_between_points: bool = True):
+                 draw_lines_between_points: bool = True, swap_xy: bool = False):
         super().__init__(trace_step=trace_step, draw_points=draw_points,
-                         draw_lines_between_points=draw_lines_between_points)
+                         draw_lines_between_points=draw_lines_between_points, swap_xy=swap_xy)
 
         self.expression = expression
         self.expression_name = expression.__name__
 
     def get_images(self, start: int, stop: int, step: float, errors_dict: dict = None) -> dict[int: float]:
-        images = {}
+        images = []
         x = start
         errors_dict.setdefault(self.expression_name, [])
         while x <= stop:
@@ -40,7 +44,10 @@ class Function(Element):
                 if isinstance(image, complex):
                     raise ValueError("Result Is Complex Number")
 
-                images[x] = image
+                if not self.swap_xy:
+                    images.append((x, image))
+                else:
+                    images.append((image, x))
 
             except (ZeroDivisionError, ValueError, OverflowError, TypeError) as e:
                 if isinstance(errors_dict, dict) and not any(str(e) in values for values in errors_dict.values()):
@@ -52,6 +59,7 @@ class Function(Element):
 
     def __repr__(self):
         return f"Function(expression_name={self.expression_name})"
+
 
 
 class Sequence(Element):
@@ -71,8 +79,8 @@ class Sequence(Element):
         if type(trace_step) is not int:
             raise TypeError(f"trace_step must be int for Sequence (not {type(trace_step)})")
 
-    def get_terms(self, start: int, stop: int, step: int, errors_dict: dict = None) -> dict[int: float]:
-        terms = {}
+    def get_terms(self, start: int, stop: int, step: int, errors_dict: dict = None) -> list:
+        terms = []
         param_for_loop = []
         errors_dict.setdefault(self.formula_name, [])
 
@@ -94,8 +102,7 @@ class Sequence(Element):
                 if term is None:
                     raise ValueError("Result Is None")
 
-                terms[x] = term
-
+                terms.append((x, term))
             except (ZeroDivisionError, ValueError, OverflowError) as e:
                 if type(errors_dict) is dict and not any(str(e) in values for values in errors_dict.values()):
                     errors_dict[f"{self.formula_name}"].append(str(e))
@@ -121,12 +128,9 @@ class Vector(Element):
         self.start_coordinate = start_coordinate
         self.end_coordinate = coordinate
 
-    def get_points(self) -> dict:
-        if self.x == 0:
-            self.x = 0.000000000000001
-
-        points = {self.start_coordinate[0]: self.start_coordinate[1],
-                  self.start_coordinate[0] + self.x: self.start_coordinate[1] + self.y}
+    def get_points(self) -> list:
+        points = [(self.start_coordinate[0], self.start_coordinate[1]),
+                  (self.start_coordinate[0] + self.x, self.start_coordinate[1] + self.y)]
 
         return points
 
@@ -175,7 +179,8 @@ class Vector(Element):
 
 
 class Landmark(Element):
-    def __init__(self, coordinate: tuple, text: str = None, text_color: tuple = (0, 0, 0), text_placement: str = "bottomright"):
+    def __init__(self, coordinate: tuple, text: str = None, text_color: tuple = (0, 0, 0),
+                 text_placement: str = "bottomright"):
         super().__init__()
 
         if not isinstance(coordinate, (tuple, list)):
@@ -187,7 +192,8 @@ class Landmark(Element):
         if not isinstance(text_color, (tuple, list)):
             raise TypeError(f"text_color must be tuple or list not {type(text_color)}")
 
-        possible_placement = {"bottomright": "topleft", "midbottom": "midtop", "midtop": "midbottom", "topleft": "bottomright", "bottomleft": "topright", "topright": "bottomleft"}
+        possible_placement = {"bottomright": "topleft", "midbottom": "midtop", "midtop": "midbottom",
+                              "topleft": "bottomright", "bottomleft": "topright", "topright": "bottomleft"}
         if text_placement not in possible_placement.keys():
             raise ValueError(
                 f"placement must be 'topleft', 'midtop', 'midbottom', 'bottomright', 'topright' or 'bottomleft' not {text_placement}")
@@ -203,28 +209,49 @@ class Landmark(Element):
         self.text_color = text_color
         self.placement = text_placement
 
-    def get_mark_coordinate(self) -> dict:
-        return {self.x: self.y}
+    def get_mark_coordinate(self) -> list:
+        return [(self.x, self.y)]
+
+    def __add__(self, other):
+        if isinstance(other, Landmark):
+            return Landmarks([self, other])
+
+        elif isinstance(other, Landmarks):
+            other.landmarks.append(self)
+            return other
 
     def __repr__(self):
         return f"Landmark(x={self.x} ; y={self.y} ; text='{self.text}' ; placement='{self.placement}')"
 
 
 class Landmarks(Element):
-    def __init__(self, landmarks: list):
-        super().__init__()
+    def __init__(self, landmarks: list, draw_lines_between_points=False):
+        super().__init__(draw_lines_between_points=draw_lines_between_points)
         for landmark in landmarks:
-            if not isinstance(landmarks, Landmark):
+            if not isinstance(landmark, Landmark):
                 raise TypeError(f"landmark in landmarks must be Landmark not {type(landmark)}")
 
         self.landmarks = landmarks
 
+    def get_mark_coordinate(self) -> list:
+        marks = []
+        for landmark in self.landmarks:
+            marks.append((landmark.x, landmark.y))
+        return marks
+
+    def __add__(self, other):
+        if isinstance(other, Landmark):
+            self.landmarks.append(other)
+            return self
+
+        elif isinstance(other, Landmarks):
+            self.landmarks += other.landmarks
+            return self
 
 
-
-class FunctionEvaluatingError(Exception):
+class ElementEvaluatingError(Exception):
     def __init__(self, error):
-        self.message = f"Error while evaluating the function : \n {error}"
+        self.message = f"Error while evaluating the Element : \n {error}"
 
 
 class CoordinateSystem:
@@ -429,25 +456,28 @@ class CoordinateSystem:
     def get_curve_points(self, element) -> list:
         try:
             if type(element) is Function:
-                points_coordinate = element.get_images(start=self.x_min, stop=self.x_max, step=element.trace_step,
-                                                       errors_dict=self.ignored_error)
+                if element.swap_xy:
+                    points_coordinate = element.get_images(start=self.y_min, stop=self.y_max, step=element.trace_step,
+                                                           errors_dict=self.ignored_error)
+                else:
+                    points_coordinate = element.get_images(start=self.x_min, stop=self.x_max, step=element.trace_step,
+                                                           errors_dict=self.ignored_error)
             elif type(element) is Sequence:
                 points_coordinate = element.get_terms(start=element.n_min, stop=self.x_max, step=element.trace_step,
                                                       errors_dict=self.ignored_error)
             elif type(element) is Vector:
                 points_coordinate = element.get_points()
 
-            elif type(element) is Landmark:
+            elif isinstance(element, (Landmarks, Landmark)):
                 points_coordinate = element.get_mark_coordinate()
 
 
         except Exception as e:
             pygame.quit()
-            raise FunctionEvaluatingError(e)
+            raise ElementEvaluatingError(e)
 
         points = []
-
-        for x, y in points_coordinate.items():
+        for x, y in points_coordinate:
             points.append(self.get_position_from_coordinate((x, y)))
 
         return points
@@ -509,7 +539,7 @@ class CoordinateSystem:
                 list_error += f"  - {i}\n"
 
         messagebox_root = Tk()
-        messagebox_root.withdraw()
+        messagebox_root.withdraw() # FAIS UNE REFONTE SAYEZ ENLEVE TK MET DANS LA CONSOLE BIEN RANGE ON EN A MAAAAAAAAAAAAAAAAAAAARE
 
         messagebox.showinfo("ignored error while calculating the points",
                             f"ignored error (the associated point will not be displayed) :\n{list_error}")
@@ -528,6 +558,7 @@ class CoordinateSystem:
             if type(element) == Landmark and not self.x_min <= element.x <= self.x_max:
                 continue
             self.curves_points.append([element, self.get_curve_points(element=element)])
+
 
     def move(self, x_velocity: float, y_velocity: float):
         key = pygame.key.get_pressed()
@@ -553,8 +584,6 @@ class CoordinateSystem:
                 self.y_min -= y_velocity
                 self.y_max -= y_velocity
                 self.getting_points = True
-
-
 
     def zoom(self, x_min, x_max, y_min, y_max):
         self.x_min, self.x_max = x_min, x_max
@@ -600,7 +629,6 @@ class CoordinateSystem:
         if win_icon_path is not None:
             icon = pygame.image.load(win_icon_path)
             pygame.display.set_icon(icon)
-
 
         pygame.init()
 
@@ -663,15 +691,15 @@ class CoordinateSystem:
 
             self.move(x_step_movement, y_step_movement)
 
-            self.draw_axes(axes_color, show_x_axis, show_y_axis)
-            self.draw_graduations(self.x_grad, self.y_grad, graduation_color)
-
             for color_index, (element, points) in enumerate(self.curves_points):
                 color = (0, 0, 0)
                 if len(points_color_list) > color_index:
                     color = points_color_list[color_index]
 
                 self.draw_curve(points=points, points_color=color, element=element)
+
+            self.draw_axes(axes_color, show_x_axis, show_y_axis)
+            self.draw_graduations(self.x_grad, self.y_grad, graduation_color)
 
             pygame.mouse.set_cursor(pygame.cursors.Cursor(self.actual_cursor))
             pygame.display.update()
