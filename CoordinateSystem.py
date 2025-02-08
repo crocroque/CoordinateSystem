@@ -3,7 +3,7 @@ import math
 
 
 class Element:
-    def __init__(self, trace_step, draw_points, draw_lines_between_points):
+    def __init__(self, trace_step=0, draw_points=True, draw_lines_between_points=False):
         self.trace_step = trace_step
         self.draw_points = draw_points
         self.draw_lines_between_points = draw_lines_between_points
@@ -121,7 +121,7 @@ class Vector(Element):
         self.start_coordinate = start_coordinate
         self.end_coordinate = coordinate
 
-    def get_points(self):
+    def get_points(self) -> dict:
         if self.x == 0:
             self.x = 0.000000000000001
 
@@ -176,7 +176,7 @@ class Vector(Element):
 
 class Landmark(Element):
     def __init__(self, coordinate: tuple, text: str = None, text_color: tuple = (0, 0, 0), text_placement: str = "bottomright"):
-        super().__init__(draw_points=True, draw_lines_between_points=False, trace_step=1)
+        super().__init__()
 
         if not isinstance(coordinate, (tuple, list)):
             raise TypeError(f"coordinate must be tuple or list not {type(coordinate)}")
@@ -203,11 +203,23 @@ class Landmark(Element):
         self.text_color = text_color
         self.placement = text_placement
 
-    def get_mark_coordinate(self):
+    def get_mark_coordinate(self) -> dict:
         return {self.x: self.y}
 
     def __repr__(self):
         return f"Landmark(x={self.x} ; y={self.y} ; text='{self.text}' ; placement='{self.placement}')"
+
+
+class Landmarks(Element):
+    def __init__(self, landmarks: list):
+        super().__init__()
+        for landmark in landmarks:
+            if not isinstance(landmarks, Landmark):
+                raise TypeError(f"landmark in landmarks must be Landmark not {type(landmark)}")
+
+        self.landmarks = landmarks
+
+
 
 
 class FunctionEvaluatingError(Exception):
@@ -240,7 +252,7 @@ class CoordinateSystem:
             raise ValueError("screen dimensions must be non-negative")
 
         for element in graph_elements:
-            if not isinstance(element, (Function, Vector, Sequence, Landmark)):
+            if not isinstance(element, Element):
                 raise TypeError(
                     f"element in graph_elements must be Function, Vector, Sequence or Landmark. Not {type(element)}")
 
@@ -428,6 +440,7 @@ class CoordinateSystem:
             elif type(element) is Landmark:
                 points_coordinate = element.get_mark_coordinate()
 
+
         except Exception as e:
             pygame.quit()
             raise FunctionEvaluatingError(e)
@@ -456,9 +469,6 @@ class CoordinateSystem:
     def draw_curve(self, points: list, points_color: tuple, element) -> None:
         index_counter = 0
         for point_position in points:
-            if type(element) is Vector and element.draw_arrow:
-                self.draw_arrow(color=points_color, start_pos=points[0], end_pos=points[1])
-
             if element.draw_points:
                 x, y = point_position
                 point = pygame.draw.circle(self.screen, points_color, (x, y), 2)
@@ -467,8 +477,12 @@ class CoordinateSystem:
                 pygame.draw.line(self.screen, points_color, point_position, points[index_counter + 1], 3)
                 index_counter += 1
 
+            if type(element) is Vector and element.draw_arrow:
+                self.draw_arrow(color=points_color, start_pos=points[0], end_pos=points[1])
+
             if type(element) is Landmark and type(element.text) is not None:
                 self.draw_landmark_text(landmark=element, point=point)
+
 
     def draw_text(self, text_position, text: str) -> None:
         text_surface = self.font.render(text, True, (0, 0, 0))
@@ -516,8 +530,9 @@ class CoordinateSystem:
             self.curves_points.append([element, self.get_curve_points(element=element)])
 
     def move(self, x_velocity: float, y_velocity: float):
-
         key = pygame.key.get_pressed()
+        if key[pygame.K_r]:
+            self.initial_xy()
         if pygame.time.get_ticks() % 10 == 0:
             if key[pygame.K_RIGHT]:
                 self.x_max += x_velocity
@@ -539,8 +554,7 @@ class CoordinateSystem:
                 self.y_max -= y_velocity
                 self.getting_points = True
 
-            if key[pygame.K_r]:
-                self.initial_xy()
+
 
     def zoom(self, x_min, x_max, y_min, y_max):
         self.x_min, self.x_max = x_min, x_max
@@ -656,6 +670,7 @@ class CoordinateSystem:
                 color = (0, 0, 0)
                 if len(points_color_list) > color_index:
                     color = points_color_list[color_index]
+
                 self.draw_curve(points=points, points_color=color, element=element)
 
             pygame.mouse.set_cursor(pygame.cursors.Cursor(self.actual_cursor))
