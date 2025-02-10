@@ -209,8 +209,9 @@ class Landmark(Element):
         self.text_color = text_color
         self.placement = text_placement
 
-    def get_mark_coordinate(self) -> list:
-        return [(self.x, self.y)]
+    def get_mark_coordinate(self, x_min: float, x_max: float) -> list:
+        if x_min <= self.x <= x_max:
+            return [(self.x, self.y)]
 
     def __add__(self, other):
         if isinstance(other, Landmark):
@@ -233,10 +234,12 @@ class Landmarks(Element):
 
         self.landmarks = landmarks
 
-    def get_mark_coordinate(self) -> list:
+    def get_mark_coordinate(self, x_min: float, x_max: float) -> list:
         marks = []
         for landmark in self.landmarks:
-            marks.append((landmark.x, landmark.y))
+            if x_min <= landmark.x <= x_max:
+                marks.append((landmark.x, landmark.y))
+
         return marks
 
     def __add__(self, other):
@@ -469,7 +472,8 @@ class CoordinateSystem:
                 points_coordinate = element.get_points()
 
             elif isinstance(element, (Landmarks, Landmark)):
-                points_coordinate = element.get_mark_coordinate()
+                points_coordinate = element.get_mark_coordinate(x_min=self.x_min, x_max=self.x_max)
+
 
 
         except Exception as e:
@@ -533,13 +537,14 @@ class CoordinateSystem:
 
         list_error = ""
         for error in self.ignored_error.items():
-            list_error += f"- element {error[0]} : \n"
+            if not error[1] == []:
+                list_error += f"- element {error[0]} : \n"
 
-            for i in error[1]:
-                list_error += f"  - {i}\n"
+                for i in error[1]:
+                    list_error += f"  - {i}\n"
 
         messagebox_root = Tk()
-        messagebox_root.withdraw() # FAIS UNE REFONTE SAYEZ ENLEVE TK MET DANS LA CONSOLE BIEN RANGE ON EN A MAAAAAAAAAAAAAAAAAAAARE
+        messagebox_root.withdraw()
 
         messagebox.showinfo("ignored error while calculating the points",
                             f"ignored error (the associated point will not be displayed) :\n{list_error}")
