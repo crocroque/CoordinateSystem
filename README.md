@@ -54,18 +54,6 @@ if __name__ == '__main__':
 ### result :
 ![WithCodeMultipleFunctions](https://github.com/crocroque/FunctionVisualizer/blob/main/images/WithCodeMultipleFunction.png)
 
-## using FunctionMaker.py
-![FunctionMakerMenu](https://github.com/crocroque/FunctionVisualizer/blob/main/images/FunctionMakerMenu.png)
-
-Just enter the settings that you want and click "show".
-For more settings click "more settings"
-
-## usage example
-![FunctionMakerFilled](https://github.com/crocroque/FunctionVisualizer/blob/main/images/FunctionMakerFilled.png)
-
-### result :
-![FunctionMakerFilledResult](https://github.com/crocroque/FunctionVisualizer/blob/main/images/FunctionMakerFilledResult.png)
-
 ## visualisation of a Sequence :
 ```python
 from CoordinateSystem import CoordinateSystem, Sequence
