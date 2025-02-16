@@ -15,7 +15,7 @@ class FunctionMaker(tk.Tk):
     def __init__(self):
         super().__init__()
 
-        self.title("Function Maker")
+        self.title("Element Maker")
 
         self.notebook = ttk.Notebook(self)
         self.notebook.pack(expand=True, fill='both')
@@ -227,7 +227,7 @@ class FunctionMaker(tk.Tk):
                 start_coor = (float(tab_widget["Starting X"].get()), float(tab_widget["Starting Y"].get()))
 
                 draw_arrow = tab_widget["Draw arrow ?"].get()
-                print(coordinate, start_coor, draw_arrow)
+
                 vector = cs.Vector(coordinate=coordinate, start_coordinate=start_coor, draw_arrow=draw_arrow,
                                    draw_points=draw_points.get(), draw_lines_between_points=draw_lines_between_points.get())
 
@@ -384,4 +384,5 @@ class FunctionMaker(tk.Tk):
 
 if __name__ == '__main__':
     app = FunctionMaker()
+
     app.mainloop()
