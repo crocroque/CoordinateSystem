@@ -27,12 +27,13 @@ class FunctionMaker(tk.Tk):
             "win_icon_path": {"type": "FILE", "DefaultValue": None},
             "win_title": {"type": "STRING", "DefaultValue": ""},
             "axes_sep": {"type": "SEPARATOR", "DefaultValue": "AXES"},
-            "MIN X": {"type": "FLOAT", "DefaultValue": -10},
-            "MAX X": {"type": "FLOAT", "DefaultValue": 10},
-            "X GRADUATION STEP": {"type": "FLOAT", "DefaultValue": 1},
-            "MIN Y": {"type": "FLOAT", "DefaultValue": -10},
-            "MAX Y": {"type": "FLOAT", "DefaultValue": 10},
-            "Y GRADUATION STEP": {"type": "FLOAT", "DefaultValue": 1},
+            "min x": {"type": "FLOAT", "DefaultValue": -10},
+            "max x": {"type": "FLOAT", "DefaultValue": 10},
+            "x graduation step": {"type": "FLOAT", "DefaultValue": 1},
+            "min y": {"type": "FLOAT", "DefaultValue": -10},
+            "max y": {"type": "FLOAT", "DefaultValue": 10},
+            "y graduation step": {"type": "FLOAT", "DefaultValue": 1},
+            "show grid lines": {"type": "BOOL", "DefaultValue": False},
             "color_sep": {"type": "SEPARATOR", "DefaultValue": "COLOR"},
             "background_color": {"type": "COLOR", "DefaultValue": (255, 255, 255)},
             "axes_color": {"type": "COLOR", "DefaultValue": (0, 0, 0)},
@@ -256,13 +257,15 @@ class FunctionMaker(tk.Tk):
 
         screen_size = (float(get_entry("WINDOW WIDTH")), float(get_entry("WINDOW HEIGHT")))
 
-        x_min = float(get_entry("MIN X"))
-        x_max = float(get_entry("MAX X"))
-        x_grad_step = float(get_entry("X GRADUATION STEP"))
+        x_min = float(get_entry("min x"))
+        x_max = float(get_entry("max x"))
+        x_grad_step = float(get_entry("x graduation step"))
 
-        y_min = float(get_entry("MIN Y"))
-        y_max = float(get_entry("MAX Y"))
-        y_grad_step = float(get_entry("Y GRADUATION STEP"))
+        y_min = float(get_entry("min y"))
+        y_max = float(get_entry("max y"))
+        y_grad_step = float(get_entry("y graduation step"))
+
+        show_grid_lines = get_check_btn("show grid lines")
 
         bg_color = get_text_color_lbl("background_color")
         axes_color = get_text_color_lbl("axes_color")
@@ -288,9 +291,9 @@ class FunctionMaker(tk.Tk):
                     graduation_color=graduation_color,
                     show_x_axis=show_x_axis, show_x_graduation_coordinate=show_x_graduation_coordinate,
                     show_y_axis=show_y_axis,
-                    show_y_graduation_coordinate=show_y_graduation_coordinate, show_coordinate=show_coordinate,
-                    win_title=win_title,
-                    win_icon_path=win_icon_path, show_ignored_error=show_ignored_error, x_step_movement=x_step_movement,
+                    show_y_graduation_coordinate=show_y_graduation_coordinate, show_grid_lines=show_grid_lines,
+                    show_coordinate=show_coordinate, win_title=win_title, win_icon_path=win_icon_path,
+                    show_ignored_error=show_ignored_error, x_step_movement=x_step_movement,
                     y_step_movement=y_step_movement)
 
     def create_param(self, tab: ttk.Frame, dictName: dict):
