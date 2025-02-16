@@ -83,7 +83,7 @@ class Sequence(Element):
         terms = []
         param_for_loop = []
         errors_dict.setdefault(self.formula_name, [])
-
+        stop += 1 # for the for loop
         for i in {start: "start", stop: "stop", step: "step"}.items():
             if type(i[0]) is int:
                 param_for_loop.append(i[0])
@@ -564,6 +564,12 @@ class CoordinateSystem:
                 continue
             self.curves_points.append([element, self.get_curve_points(element=element)])
 
+    def show_grid_lines(self, grad_color: tuple):
+        for grad in self.x_grad:
+            pygame.draw.line(self.screen, color=grad_color, start_pos=(grad[0], 0), end_pos=(grad[0], self.height))
+
+        for grad in self.y_grad:
+            pygame.draw.line(self.screen, color=grad_color, start_pos=(0, grad[1]), end_pos=(self.width, grad[1]))
 
     def move(self, x_velocity: float, y_velocity: float):
         key = pygame.key.get_pressed()
@@ -621,7 +627,7 @@ class CoordinateSystem:
     def show(self, background_color: tuple = (255, 255, 255), points_color_list: list = None,
              axes_color: tuple = (0, 0, 0),
              graduation_color: tuple = (0, 0, 0), show_x_axis: bool = True, show_x_graduation_coordinate: bool = False,
-             show_y_axis: bool = True, show_y_graduation_coordinate: bool = False, show_coordinate: bool = False,
+             show_y_axis: bool = True, show_y_graduation_coordinate: bool = False, show_grid_lines: bool = True, show_coordinate: bool = False,
              win_title: str = "", win_icon_path: str = None,
              show_ignored_error: bool = False, x_step_movement: float = 0.5, y_step_movement: float = 0.5):
 
@@ -693,6 +699,9 @@ class CoordinateSystem:
                 mouse_coordinate = round(mouse_coordinate[0], 1), round(mouse_coordinate[1], 1)
 
                 self.draw_text(text=str(mouse_coordinate), text_position=(self.width - 40, 10))
+
+            if show_grid_lines:
+                self.show_grid_lines(graduation_color)
 
             self.move(x_step_movement, y_step_movement)
 
