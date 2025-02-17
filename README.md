@@ -112,7 +112,7 @@ if __name__ == "__main__":
 
     landmark_1_1 = Landmark(coordinate=(1, 1), text="(1 ; 1)", text_color=(0, 0, 0), text_placement="bottomright")
 
-    sys = CoordinateSystem([landmark_1_1], (800, 800), -5, 5, 1, -5, 5, 1)
+    sys = CoordinateSystem([landmark_1_1], (500, 500), -5, 5, 1, -5, 5, 1)
 
     sys.show(show_x_graduation_coordinate=True, show_y_graduation_coordinate=True)
 ```
