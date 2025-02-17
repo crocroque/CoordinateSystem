@@ -1,5 +1,5 @@
 # CoordinateSystem
-## visualisation of one function by code :
+## function :
 ```python
 from CoordinateSystem import CoordinateSystem, Function
 
@@ -22,7 +22,7 @@ if __name__ == '__main__':
 ### result : 
 ![WithCode](https://github.com/crocroque/FunctionVisualizer/blob/main/images/WithCode.png)
 
-## visualisation of multiple functions by code :
+## multiple functions :
 ```python
 import math
 from CoordinateSystem import CoordinateSystem, Function
@@ -54,7 +54,7 @@ if __name__ == '__main__':
 ### result :
 ![WithCodeMultipleFunctions](https://github.com/crocroque/FunctionVisualizer/blob/main/images/WithCodeMultipleFunction.png)
 
-## visualisation of a Sequence :
+## Sequence :
 ```python
 from CoordinateSystem import CoordinateSystem, Sequence
 
@@ -82,7 +82,7 @@ if __name__ == '__main__':
 ### result :
 ![SequenceVisualisation](https://github.com/crocroque/FunctionVisualizer/blob/main/images/SequenceVisualisation.png)
 
-## visualisation of a Vector :
+## Vector :
 ```python
 if __name__ == '__main__':
     AB = Vector(coordinate=(10, 5), draw_lines_between_points=False, draw_points=False, draw_arrow=True)
@@ -105,6 +105,21 @@ if __name__ == '__main__':
 ### result :
 ![VectorVisualisation](https://github.com/crocroque/CoordinateSystem/blob/main/images/VectorVisualisation.png)
 
+## Landmark :
+a landmark is a point that can have a text 
+```python
+if __name__ == "__main__":
+
+    landmark_1_1 = Landmark(coordinate=(1, 1), text="(1 ; 1)", text_color=(0, 0, 0), text_placement="bottomright")
+
+    sys = CoordinateSystem([landmark_1_1], (800, 800), -5, 5, 1, -5, 5, 1)
+
+    sys.show(show_x_graduation_coordinate=True, show_y_graduation_coordinate=True)
+```
+"text_placement" is the position of the text relative to the point. can be 'topleft', 'midtop', 'midbottom', 'bottomright', 'topright' or 'bottomleft'
+### result :
+![LANDMARK1](https://github.com/crocroque/CoordinateSystem/blob/main/images/Landmark1.png)
+
 ## Optionnal Parameters of CoordinateSystem.show()
 
 | Parameter Name                | Type         | Default Value            | Description                                                                                                                        |
@@ -117,6 +132,7 @@ if __name__ == '__main__':
 | `show_x_graduation_coordinate`| `bool`       | `False`                  | Whether to display the graduation coordinates on the X-axis.                                                                       |
 | `show_y_axis`                 | `bool`       | `True`                   | Whether to display the Y-axis.                                                                                                     |
 | `show_y_graduation_coordinate`| `bool`       | `False`                  | Whether to display the graduation coordinates on the Y-axis.                                                                       |
+| `show_grid_lines`             | `bool`       | `False`                  | Whether to display the grid by drawing a line for each graduation.                                                                 |
 | `show_coordinate`             | `bool`       | `False`                  | Whether to display the coordinates of mouse in the visualization window.                                                           |
 | `win_title`                   | `str`        | `""`                     | The title of the visualization window.                                                                                             |
 | `win_icon_path`               | `str`        | `None`                   | Icon of the visualization window must be an .png or .ico image                                                                     |
