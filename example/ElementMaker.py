@@ -1,6 +1,6 @@
 import tkinter as tk
 import tkinter.ttk as ttk
-from tkinter import colorchooser, filedialog, Toplevel
+from tkinter import colorchooser, filedialog, Toplevel, simpledialog
 from PIL import Image, ImageTk
 import CoordinateSystem as cs
 import math
@@ -94,10 +94,39 @@ class FunctionMaker(tk.Tk):
         self.create_home_page()
         self.create_add_element_tab()
         self.notebook.bind("<<NotebookTabChanged>>", self.on_tab_selected)
+        self.notebook.bind("<Button-3>", self.on_tab_right_click)
 
     def create_add_element_tab(self):
         self.add_element_tab = ttk.Frame(self.notebook)
         self.notebook.add(self.add_element_tab, text="+")
+
+    def on_tab_right_click(self, event: tk.Event):
+        tab_id = self.notebook.index(f"@{event.x},{event.y}")
+        tab_text = self.notebook.tab(tab_id, "text")
+
+        if tab_id is not None and tab_text not in ["Home", "+"]:
+            context_menu = tk.Menu(self, tearoff=0)
+            context_menu.add_command(label="Delete Element", command=lambda : self.delete_tab_element(tab_id))
+            context_menu.add_command(label="Rename Element", command=lambda: self.rename_tab_element(tab_id))
+            context_menu.post(event.x_root, event.y_root)
+
+    def rename_tab_element(self, renamed_element_tab_id: int):
+        new_name = tk.simpledialog.askstring("Renommer", "Nouveau nom :")
+        if new_name is not None:
+            self.notebook.tab(renamed_element_tab_id, text=new_name)
+
+    def delete_tab_element(self, deleted_element_tab_id: int):
+
+        for index in range(self.notebook.index("end")):
+            if self.notebook.tab(index, "text") == "Home":
+                self.notebook.select(index)
+                break
+        name = self.notebook.tabs()[deleted_element_tab_id]
+        frame = self.notebook.nametowidget(name)
+
+        del self.graph_elements[frame]
+
+        self.notebook.forget(deleted_element_tab_id)
 
     def ask_element(self):
         self.asking_window = Toplevel(self.notebook)
@@ -121,18 +150,18 @@ class FunctionMaker(tk.Tk):
         tk.Label(element_tab, text="------------------------", font=("", 20)).grid(row=0, column=2)
 
         if element_name == "Function":
-            self.create_param(tab=element_tab, dictName=self.function_page_param)
+            self.create_param(tab=element_tab, dictName=self.function_page_param, type_element="Function")
             tk.Label(element_tab, text="PYTHON SYNTAX (MATH LIB CAN BE USED)").grid(column=2, row=1)
 
         elif element_name == "Sequence":
-            self.create_param(tab=element_tab, dictName=self.sequence_page_param)
+            self.create_param(tab=element_tab, dictName=self.sequence_page_param, type_element="Sequence")
             tk.Label(element_tab, text="PYTHON SYNTAX (MATH LIB CAN BE USED)").grid(column=2, row=1)
 
         elif element_name == "Vector":
-            self.create_param(tab=element_tab, dictName=self.Vector_page_param)
+            self.create_param(tab=element_tab, dictName=self.Vector_page_param, type_element="Vector")
 
         elif element_name == "Landmark":
-            self.create_param(tab=element_tab, dictName=self.Landmark_page_param)
+            self.create_param(tab=element_tab, dictName=self.Landmark_page_param, type_element="Landmark")
 
         element_tab.update_idletasks()
         self.geometry(f"{element_tab.winfo_reqwidth()}x{element_tab.winfo_reqheight()}")
@@ -181,9 +210,11 @@ class FunctionMaker(tk.Tk):
 
     def add_elements(self, system: cs.CoordinateSystem):
         for tab in self.graph_elements:
-            tab_name = self.notebook.tab(tab, "text")
+
             tab_widget = self.graph_elements.get(tab)
-            if tab_name == "Home":
+            type_element = tab_widget["type_element"]
+
+            if type_element == "Home":
                 continue
 
             trace_step = tab_widget.get("trace_step", None)
@@ -197,7 +228,7 @@ class FunctionMaker(tk.Tk):
             draw_points = tab_widget.get("draw_points", None)
             draw_lines_between_points = tab_widget.get("draw_lines_between_points", None)
 
-            if tab_name == "Function":
+            if type_element == "Function":
                 expression = tab_widget["expression"].get()
 
                 def f(x, expr=expression):
@@ -210,7 +241,7 @@ class FunctionMaker(tk.Tk):
 
                 system.graph_elements.append(func)
 
-            elif tab_name == "Sequence":
+            elif type_element == "Sequence":
                 formula = tab_widget["formula"].get()
 
                 def u(n, form=formula):
@@ -223,7 +254,7 @@ class FunctionMaker(tk.Tk):
 
                 system.graph_elements.append(seq)
 
-            elif tab_name == "Vector":
+            elif type_element == "Vector":
                 coordinate = (float(tab_widget["Vector X"].get()), float(tab_widget["Vector Y"].get()))
                 start_coor = (float(tab_widget["Starting X"].get()), float(tab_widget["Starting Y"].get()))
 
@@ -234,7 +265,7 @@ class FunctionMaker(tk.Tk):
 
                 system.graph_elements.append(vector)
 
-            elif tab_name == "Landmark":
+            elif type_element == "Landmark":
                 coordinate = (float(tab_widget["X"].get()), float(tab_widget["Y"].get()))
 
                 text = tab_widget["text"].get()
@@ -296,9 +327,11 @@ class FunctionMaker(tk.Tk):
                     show_ignored_error=show_ignored_error, x_step_movement=x_step_movement,
                     y_step_movement=y_step_movement)
 
-    def create_param(self, tab: ttk.Frame, dictName: dict):
+    def create_param(self, tab: ttk.Frame, dictName: dict, type_element: str):
         self.graph_elements[tab] = {}
+        self.graph_elements[tab]['type_element'] = type_element
         for (index, (param, paramDict)) in enumerate(dictName.items(), start=1):
+            print(dictName)
             type_param = paramDict["type"]
             default_value = paramDict["DefaultValue"]
 
@@ -379,7 +412,7 @@ class FunctionMaker(tk.Tk):
         tk.Label(home_page, text="Home Page", font=("", 20)).grid(row=0, column=1)
         tk.Label(home_page, text="------------------------", font=("", 20)).grid(row=0, column=2)
 
-        self.create_param(tab=home_page, dictName=self.home_page_param)
+        self.create_param(tab=home_page, dictName=self.home_page_param, type_element="HOME")
 
         show_btn = tk.Button(home_page, text="SHOW", command=self.show, width=10, height=3)
         show_btn.grid(column=1, row=len(self.home_page_param.items()) + 1)
