@@ -196,7 +196,7 @@ class Landmark(Element):
                               "topleft": "bottomright", "bottomleft": "topright", "topright": "bottomleft"}
         if text_placement not in possible_placement.keys():
             raise ValueError(
-                f"placement must be 'topleft', 'midtop', 'midbottom', 'bottomright', 'topright' or 'bottomleft' not {text_placement}")
+                f"text_placement must be 'topleft', 'midtop', 'midbottom', 'bottomright', 'topright' or 'bottomleft' not {text_placement}")
 
         for item in possible_placement.items():
             if text_placement == item[1]:
@@ -284,7 +284,7 @@ class CoordinateSystem:
         for element in graph_elements:
             if not isinstance(element, Element):
                 raise TypeError(
-                    f"element in graph_elements must be Function, Vector, Sequence or Landmark. Not {type(element)}")
+                    f"element in graph_elements must be Function, Vector, Sequence or Landmark(s). Not {type(element)}")
 
         self.graph_elements = graph_elements
 
@@ -445,16 +445,14 @@ class CoordinateSystem:
             x, y = i
             pygame.draw.line(self.screen, graduation_color, (x - 5, y), (x + 5, y))
 
-        if len(self.graduation_coordinate) > 0:
-            font = pygame.font.Font(None, 20)
-            for i in self.graduation_coordinate:
-                coordinate = i[0]
-                text = i[1]
+        for i in self.graduation_coordinate:
+            coordinate = i[0]
+            text = i[1]
 
-                text_surface = font.render(str(round(text, 2)), True, graduation_color)
-                text_rect = text_surface.get_rect(center=coordinate)
+            text_surface = self.font.render(str(round(text, 2)), True, graduation_color)
+            text_rect = text_surface.get_rect(center=coordinate)
 
-                self.screen.blit(source=text_surface, dest=text_rect)
+            self.screen.blit(source=text_surface, dest=text_rect)
 
     def get_curve_points(self, element) -> list:
         try:
@@ -520,7 +518,7 @@ class CoordinateSystem:
 
     def draw_text(self, text_position, text: str) -> None:
         text_surface = self.font.render(text, True, (0, 0, 0))
-        text_rect = text_surface.get_rect(center=text_position)
+        text_rect = text_surface.get_rect(bottomright=text_position)
 
         self.screen.blit(text_surface, text_rect)
 
@@ -627,7 +625,7 @@ class CoordinateSystem:
     def show(self, background_color: tuple = (255, 255, 255), points_color_list: list = None,
              axes_color: tuple = (0, 0, 0),
              graduation_color: tuple = (0, 0, 0), show_x_axis: bool = True, show_x_graduation_coordinate: bool = False,
-             show_y_axis: bool = True, show_y_graduation_coordinate: bool = False, show_grid_lines: bool = True, show_coordinate: bool = False,
+             show_y_axis: bool = True, show_y_graduation_coordinate: bool = False, show_grid_lines: bool = False, show_coordinate: bool = False,
              win_title: str = "", win_icon_path: str = None,
              show_ignored_error: bool = False, x_step_movement: float = 0.5, y_step_movement: float = 0.5):
 
@@ -698,7 +696,7 @@ class CoordinateSystem:
                 mouse_coordinate = self.get_coordinate_from_position(self.mouse_pos)
                 mouse_coordinate = round(mouse_coordinate[0], 1), round(mouse_coordinate[1], 1)
 
-                self.draw_text(text=str(mouse_coordinate), text_position=(self.width - 40, 10))
+                self.draw_text(text=str(mouse_coordinate), text_position=(self.width - 5, 20))
 
             if show_grid_lines:
                 self.show_grid_lines(graduation_color)
