@@ -386,8 +386,8 @@ class CoordinateSystem:
             return []
 
         graduations = []
+        x_grad = math.ceil(self.x_min / self.x_graduation_step) * self.x_graduation_step
 
-        x_grad = 0
         while x_grad <= self.x_max:
             x, y = self.get_position_from_coordinate((x_grad, 0))
             graduations.append((x, y))
@@ -397,16 +397,6 @@ class CoordinateSystem:
 
             x_grad += self.x_graduation_step
 
-        x_grad = 0
-        while x_grad >= self.x_min:
-            x, y = self.get_position_from_coordinate((x_grad, 0))
-            graduations.append((x, y))
-
-            if show_x_graduation_coordinate:
-                self.graduation_coordinate.append([(x, y + 10), x_grad])
-
-            x_grad -= self.x_graduation_step
-
         return graduations
 
     def get_y_graduations(self, show_y_graduation_coordinate: bool) -> list:
@@ -414,7 +404,8 @@ class CoordinateSystem:
             return []
 
         graduations = []
-        y_grad = 0
+        y_grad = math.ceil(self.y_min / self.y_graduation_step) * self.y_graduation_step
+
         while y_grad <= self.y_max:
             x, y = self.get_position_from_coordinate((0, y_grad))
             graduations.append((x, y))
@@ -423,16 +414,6 @@ class CoordinateSystem:
                 self.graduation_coordinate.append([(x - 10, y), y_grad])
 
             y_grad += self.y_graduation_step
-
-        y_grad = 0
-        while y_grad >= self.y_min:
-            x, y = self.get_position_from_coordinate((0, y_grad))
-            graduations.append((x, y))
-
-            if show_y_graduation_coordinate:
-                self.graduation_coordinate.append([(x - 10, y), y_grad])
-
-            y_grad -= self.y_graduation_step
 
         return graduations
 
