@@ -31,7 +31,7 @@ class Function(Element):
         self.expression = expression
         self.expression_name = expression.__name__
 
-    def get_images(self, start: int, stop: int, step: float, errors_dict: dict = None) -> dict[int: float]:
+    def get_images(self, start: int, stop: int, step: float, errors_dict: dict = None) -> list[float, float, ...]:
         images = []
         x = start
         errors_dict.setdefault(self.expression_name, [])
